@@ -1,0 +1,4 @@
+Hello CampusConnect!
+This is a secure preview test for the newly implemented File Management System.
+We are checking if the visual text preview works properly when loading files from the Flask backend.
+Thank you!
