@@ -11,8 +11,15 @@ if backend_dir not in sys.path:
 load_dotenv(os.path.join(backend_dir, '.env'))
 load_dotenv()
 
-from app import create_app
+# Explicitly load create_app from backend/app/__init__.py to prevent naming collision with app.py
+import importlib.util
+backend_init = os.path.join(backend_dir, 'app', '__init__.py')
+spec = importlib.util.spec_from_file_location("backend_app", backend_init)
+backend_app = importlib.util.module_from_spec(spec)
+sys.modules["app"] = backend_app
+spec.loader.exec_module(backend_app)
 
+create_app = backend_app.create_app
 app = create_app()
 
 if __name__ == '__main__':
