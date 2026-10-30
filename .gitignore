@@ -18,9 +18,12 @@ backend/app/*.db
 backend/uploads/*
 !backend/uploads/.gitkeep
 
-# Environment Configurations
+# Environment Configurations (Strict Secret Protection)
 .env
-.env.local
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
 
 # Node / Frontend
 node_modules/

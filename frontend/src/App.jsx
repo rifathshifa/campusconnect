@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -13,10 +13,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import AdminPanel from './pages/AdminPanel';
-import FileManager from './pages/FileManager';
-import StudyAssistant from './pages/StudyAssistant';
-
+import StudyMaterials from './pages/StudyMaterials';
 
 function App() {
   return (
@@ -43,28 +40,21 @@ function App() {
                       } 
                     />
                     <Route 
+                      path="/study-materials" 
+                      element={
+                        <PrivateRoute>
+                          <StudyMaterials />
+                        </PrivateRoute>
+                      } 
+                    />
+                    {/* Backward-compatible alias for any legacy links */}
+                    <Route 
                       path="/files" 
-                      element={
-                        <PrivateRoute>
-                          <FileManager />
-                        </PrivateRoute>
-                      } 
+                      element={<Navigate to="/study-materials" replace />} 
                     />
                     <Route 
-                      path="/admin/panel" 
-                      element={
-                        <PrivateRoute>
-                          <AdminPanel />
-                        </PrivateRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/study-assistant" 
-                      element={
-                        <PrivateRoute>
-                          <StudyAssistant />
-                        </PrivateRoute>
-                      } 
+                      path="*" 
+                      element={<Navigate to="/" replace />} 
                     />
                   </Routes>
                 </main>
@@ -79,4 +69,3 @@ function App() {
 }
 
 export default App;
-

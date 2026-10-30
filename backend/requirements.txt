@@ -8,4 +8,4 @@ PyJWT==2.8.0
 Werkzeug==2.3.7
 requests==2.31.0
 pypdf==3.17.0
-
+gunicorn==21.2.0

@@ -37,13 +37,14 @@ def register():
             except ValueError:
                 return jsonify({'message': 'Graduation year must be a number'}), 400
 
+        dept = major or data.get('department')
         new_user = User(
             username=username, 
             email=email,
             role=role,
-            verification_status='pending' if role == 'staff' else 'approved',
+            verification_status='approved',
             full_name=full_name or username,
-            major=major,
+            department=dept,
             graduation_year=grad_yr
         )
         new_user.set_password(password)
@@ -88,7 +89,7 @@ def login():
 @jwt_required()
 def get_profile():
     current_user_id = get_jwt_identity()
-    user = User.query.get(int(current_user_id))
+    user = db.session.get(User, int(current_user_id))
     
     if not user:
         return jsonify({'message': 'User not found'}), 404

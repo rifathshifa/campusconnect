@@ -1,14 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, User, LayoutDashboard, Home, LogIn, UserPlus, ShieldCheck, UploadCloud, Sparkles, Sun, Moon } from 'lucide-react';
-
+import { LogOut, User, LayoutDashboard, Home, LogIn, UserPlus, ShieldCheck, Sun, Moon, BookOpen } from 'lucide-react';
 
 const Navbar = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, token } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const isStaff = user?.role === 'staff' || user?.role === 'admin';
+
+  // Check pending approvals count if staff
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPendingCount = async () => {
+      if (!token || !isStaff) return;
+      try {
+        const res = await fetch(`${API_URL}/study-materials/pending`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            setPendingCount(data.materials?.length || 0);
+          }
+        }
+      } catch (err) {
+        // Silently handle count polling
+      }
+    };
+
+    fetchPendingCount();
+    const interval = setInterval(fetchPendingCount, 15000); // Polling every 15s for staff
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [token, isStaff]);
 
   const handleLogout = () => {
     logout();
@@ -21,8 +52,6 @@ const Navbar = () => {
         return 'bg-danger text-light';
       case 'staff':
         return 'bg-success text-light';
-      case 'club_leader':
-        return 'bg-warning text-dark';
       default:
         return 'bg-secondary text-light';
     }
@@ -31,8 +60,9 @@ const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark cc-navbar sticky-top">
       <div className="container">
-        <Link className="navbar-brand cc-navbar-brand" to="/">
-          Campus<span>Connect</span>
+        <Link className="navbar-brand cc-navbar-brand d-flex align-items-center gap-2" to="/">
+          <BookOpen className="text-gold" size={24} />
+          <span>Campus<span>Connect</span></span>
         </Link>
         <button
           className="navbar-toggler"
@@ -60,23 +90,24 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link d-flex align-items-center gap-1" to="/files">
-                    <UploadCloud size={16} /> Files
+                  <Link className="nav-link d-flex align-items-center gap-1 text-gold fw-semibold" to="/study-materials">
+                    <BookOpen size={16} className="text-gold" /> Study Materials
                   </Link>
                 </li>
-                <li className="nav-item">
-                  <Link className="nav-link d-flex align-items-center gap-1 text-gold" to="/study-assistant">
-                    <Sparkles size={16} className="text-gold" /> AI Assistant
-                  </Link>
-                </li>
+                {isStaff && (
+                  <li className="nav-item">
+                    <Link className="nav-link d-flex align-items-center gap-1 text-warning fw-semibold" to="/study-materials?tab=pending">
+                      <ShieldCheck size={16} />
+                      <span>Pending Approvals</span>
+                      {pendingCount > 0 && (
+                        <span className="badge bg-danger text-light ms-1 rounded-pill animate-pulse">
+                          {pendingCount}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                )}
               </>
-            )}
-            {isAuthenticated && user?.role === 'admin' && (
-              <li className="nav-item">
-                <Link className="nav-link d-flex align-items-center gap-1" to="/admin/panel">
-                  <ShieldCheck size={16} className="text-gold" /> Admin Panel
-                </Link>
-              </li>
             )}
           </ul>
           <div className="d-flex align-items-center gap-3">
@@ -92,9 +123,9 @@ const Navbar = () => {
               <>
                 <span className="text-light d-flex align-items-center gap-1 font-heading me-1">
                   <User size={16} className="text-gold" />
-                  Hi, <strong className="text-gold">{user?.username}</strong>
+                  Hi, <strong className="text-gold">{user?.full_name || user?.username}</strong>
                   <span className={`badge ms-2 text-capitalize ${getBadgeClass(user?.role)}`} style={{ fontSize: '0.75rem', padding: '0.3em 0.6em', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                    {user?.role === 'club_leader' ? 'Club Leader' : user?.role}
+                    {user?.role}
                   </span>
                 </span>
                 <button
@@ -106,11 +137,11 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="btn btn-link btn-sm d-flex align-items-center gap-1">
+                <Link to="/login" className="btn btn-link btn-sm d-flex align-items-center gap-1 text-light">
                   <LogIn size={16} /> Login
                 </Link>
                 <Link to="/register" className="btn btn-primary btn-sm d-flex align-items-center gap-1 py-1 px-3">
-                  <UserPlus size={16} /> Sign Up
+                  <UserPlus size={16} /> Register
                 </Link>
               </>
             )}
