@@ -1,10 +1,9 @@
 services:
-  # CampusConnect Flask Backend Service
+  # CampusConnect Fullstack Web Service (Serves React frontend at / and Flask API at /api)
   - type: web
     name: campusconnect-backend
     env: python
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
+    buildCommand: chmod +x build.sh && ./build.sh
     startCommand: gunicorn --bind 0.0.0.0:$PORT run:app
     envVars:
       - key: PYTHON_VERSION
@@ -19,3 +18,18 @@ services:
         sync: false
       - key: CORS_ORIGINS
         sync: false
+
+  # Optional Standalone Static Site (if deploying frontend separately)
+  - type: static
+    name: campusconnect-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://campusconnect-5ipj.onrender.com/api

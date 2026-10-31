@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { SkeletonLoader } from '../components/Common/Loader';
+import { API_URL } from '../config/api';
 import {
   BookOpen, FileText, Download, Eye, UploadCloud, Search, Filter,
   CheckCircle2, Clock, XCircle, AlertCircle, ShieldCheck, ChevronRight,
@@ -17,7 +18,6 @@ const StudyMaterials = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const isStaff = user?.role === 'staff' || user?.role === 'admin';
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   // Active Main Tab: 'browse' | 'my_uploads' | 'pending'
   const initialTab = searchParams.get('tab') || 'browse';

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { API_URL } from '../config/api';
 import { SkeletonLoader } from '../components/Common/Loader';
 import {
   BookOpen, UploadCloud, ShieldCheck, CheckCircle2, Clock, XCircle,
@@ -30,7 +31,6 @@ const Dashboard = () => {
   const [previewBlobUrl, setPreviewBlobUrl] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
   const isStaff = user?.role === 'staff' || user?.role === 'admin';
 
   const fetchDashboard = async () => {
