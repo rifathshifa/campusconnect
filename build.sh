@@ -19,3 +19,4 @@ if [ -d "frontend" ]; then
 fi
 
 echo "=== Build Completed Successfully ==="
+
