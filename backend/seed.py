@@ -15,26 +15,123 @@ from app.models import db, User, Department, Subject, StudyMaterial
 app = create_app()
 
 def create_sample_pdf(filepath, title_text, subject_text, type_text):
-    """Generate a valid, standard PDF-1.4 binary file for realistic document previews."""
-    clean_title = "".join(c if ord(c) < 128 else ' ' for c in title_text)[:60]
-    clean_subj = "".join(c if ord(c) < 128 else ' ' for c in subject_text)[:50]
-    clean_type = "".join(c if ord(c) < 128 else ' ' for c in type_text)[:40]
-    pdf_bytes = (
-        b"%PDF-1.4\n"
-        b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
-        b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"
-        b"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n"
-        b"4 0 obj\n<< /Length 200 >>\nstream\n"
-        b"BT\n/F1 18 Tf\n50 720 Td\n(" + clean_title.encode('latin1') + b") Tj\n"
-        b"/F1 13 Tf\n0 -30 Td\n(Subject: " + clean_subj.encode('latin1') + b") Tj\n"
-        b"0 -24 Td\n(Material Type: " + clean_type.encode('latin1') + b") Tj\n"
-        b"0 -24 Td\n(CampusConnect Digital Study Materials Library) Tj\n"
-        b"0 -24 Td\n(Exclusively for Authenticated College Students & Staff) Tj\n"
-        b"ET\nendstream\nendobj\n"
-        b"5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n"
-        b"xref\n0 6\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000244 00000 n \n0000000494 00000 n \n"
-        b"trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n573\n%%EOF\n"
-    )
+    """
+    Generate a valid, standard PDF-1.4 binary file with clean textbook layout
+    and consistent theme palette:
+      - #023047: Deep Prussian Navy (Headings, primary accents, header banner)
+      - #219ebc: Cerulean Blue (Subheadings, section dividers, borders)
+      - #8ecae6: Sky Blue (Highlights background, subtle borders, code keywords)
+      - #ffb703: Amber Gold (Badges, syntax highlights, callout markers)
+      - #fb8500: Vibrant Orange (Accent stripes, bullets, warning indicators)
+    """
+    clean_title = "".join(c if ord(c) < 128 else ' ' for c in title_text)[:50]
+    clean_subj = "".join(c if ord(c) < 128 else ' ' for c in subject_text)[:40]
+    clean_type = "".join(c if ord(c) < 128 else ' ' for c in type_text)[:30]
+
+    stream = []
+    
+    # 1. Top Header Banner (#023047)
+    stream.append("0.008 0.188 0.278 rg")
+    stream.append("0 750 612 42 re f")
+    
+    # Accent stripe underneath banner (#fb8500)
+    stream.append("0.984 0.522 0.000 rg")
+    stream.append("0 745 612 5 re f")
+    
+    # Header Running Title
+    stream.append("BT /F1 11 Tf 1 1 1 rg 40 765 Td (CAMPUSCONNECT ACADEMIC DIGITAL REPOSITORY) Tj ET")
+    stream.append("BT /F2 9 Tf 0.557 0.792 0.902 rg 430 765 Td (PEER-VERIFIED TEXTBOOK NOTES) Tj ET")
+
+    # 2. Material Type Badge (#ffb703 background, #023047 text)
+    stream.append("1.000 0.718 0.012 rg 40 705 130 22 re f")
+    stream.append("BT /F1 9 Tf 0.008 0.188 0.278 rg 48 712 Td (" + clean_type + ") Tj ET")
+
+    # 3. Chapter / Document Heading (#023047)
+    stream.append("BT /F1 18 Tf 0.008 0.188 0.278 rg 40 675 Td (" + clean_title + ") Tj ET")
+    
+    # 4. Subheading (#219ebc)
+    stream.append("BT /F2 11 Tf 0.129 0.620 0.737 rg 40 652 Td (Subject: " + clean_subj + "  |  Academic Reference Material) Tj ET")
+    
+    # Subtle Divider Border (#8ecae6)
+    stream.append("0.557 0.792 0.902 RG 1.5 w 40 638 m 572 638 l S")
+
+    # 5. Highlight / Key Concept Callout Box (bg: #8ecae6 tint, border: #219ebc, tag: #fb8500)
+    stream.append("0.92 0.96 0.98 rg 40 540 532 80 re f")
+    stream.append("0.129 0.620 0.737 rg 40 540 5 80 re f")
+    stream.append("0.557 0.792 0.902 RG 1 w 40 540 532 80 re S")
+    stream.append("0.984 0.522 0.000 rg 55 598 90 16 re f")
+    stream.append("BT /F1 8 Tf 1 1 1 rg 62 603 Td (KEY CONCEPT) Tj ET")
+    stream.append("BT /F1 10 Tf 0.008 0.188 0.278 rg 55 578 Td (Standard Textbook Formulation & Reference Definition:) Tj ET")
+    stream.append("BT /F2 9 Tf 0.008 0.188 0.278 rg 55 558 Td (Fundamental algorithms and theoretical structures must maintain formal correctness and bounded complexity.) Tj ET")
+
+    # 6. Section Subheading (#219ebc with #fb8500 accent bullet)
+    stream.append("0.984 0.522 0.000 rg 40 500 6 14 re f")
+    stream.append("BT /F1 13 Tf 0.129 0.620 0.737 rg 52 502 Td (Implementation Code Snippet & Analytical Walkthrough) Tj ET")
+
+    # 7. Code Block (#023047 bg, #219ebc border, #ffb703 lang tag)
+    stream.append("0.008 0.188 0.278 rg 40 340 532 145 re f")
+    stream.append("0.129 0.620 0.737 RG 1.5 w 40 340 532 145 re S")
+    stream.append("0.015 0.25 0.35 rg 40 460 532 25 re f")
+    stream.append("1.000 0.718 0.012 rg 50 465 75 15 re f")
+    stream.append("BT /F1 8 Tf 0.008 0.188 0.278 rg 55 469 Td (C++ / Python) Tj ET")
+    stream.append("BT /F2 8 Tf 0.557 0.792 0.902 rg 135 469 Td (// Verified textbook benchmark implementation) Tj ET")
+    
+    stream.append("BT /F3 9 Tf 0.557 0.792 0.902 rg 55 440 Td (template <typename T>) Tj ET")
+    stream.append("BT /F3 9 Tf 1 1 1 rg 55 422 Td (void execute_core_algorithm(const std::vector<T>& dataset) {) Tj ET")
+    stream.append("BT /F3 9 Tf 1.000 0.718 0.012 rg 70 404 Td (    int optimal_threshold = 256;  // #ffb703 numeric accent) Tj ET")
+    stream.append("BT /F3 9 Tf 0.557 0.792 0.902 rg 70 386 Td (    for (size_t idx = 0; idx < dataset.size(); ++idx) {) Tj ET")
+    stream.append("BT /F3 9 Tf 0.984 0.522 0.000 rg 90 368 Td (        compute_state_transition(dataset[idx], optimal_threshold);) Tj ET")
+    stream.append("BT /F3 9 Tf 1 1 1 rg 55 350 Td (}) Tj ET")
+
+    # 8. Note / Highlight Box (#ffb703 & #fb8500)
+    stream.append("0.984 0.522 0.000 rg 40 260 5 60 re f")
+    stream.append("0.99 0.97 0.90 rg 45 260 527 60 re f")
+    stream.append("BT /F1 10 Tf 0.984 0.522 0.000 rg 55 298 Td (EXAMINATION NOTE & IMPORTANT COMPLEXITY BOUNDS:) Tj ET")
+    stream.append("BT /F2 9 Tf 0.008 0.188 0.278 rg 55 280 Td (Time Complexity: O(N log N) in worst case. Space Complexity: O(1) auxiliary.) Tj ET")
+
+    # 9. Running Footer
+    stream.append("0.557 0.792 0.902 RG 1 w 40 50 532 0 re S")
+    stream.append("BT /F2 8 Tf 0.129 0.620 0.737 rg 40 35 Td (CampusConnect Education Portal  --  Approved Academic Reference Material) Tj ET")
+    stream.append("0.008 0.188 0.278 rg 530 30 42 16 re f")
+    stream.append("BT /F1 8 Tf 1.000 0.718 0.012 rg 540 34 Td (p. 01) Tj ET")
+
+    content = "\n".join(stream)
+    content_bytes = content.encode('latin1')
+
+    header = b"%PDF-1.4\n"
+    objs = []
+    
+    # 1: Catalog
+    objs.append(b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n")
+    # 2: Pages
+    objs.append(b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n")
+    # 3: Page
+    objs.append(b"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R /F3 7 0 R >> >> >>\nendobj\n")
+    # 4: Contents
+    objs.append(b"4 0 obj\n<< /Length " + str(len(content_bytes)).encode('ascii') + b" >>\nstream\n" + content_bytes + b"\nendstream\nendobj\n")
+    # 5: Helvetica-Bold
+    objs.append(b"5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n")
+    # 6: Helvetica
+    objs.append(b"6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n")
+    # 7: Courier
+    objs.append(b"7 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n")
+
+    # Compute exact byte offsets for standard PDF xref
+    offsets = [0]
+    current = len(header)
+    for obj in objs:
+        offsets.append(current)
+        current += len(obj)
+        
+    xref_offset = current
+    xref = b"xref\n0 " + str(len(objs) + 1).encode('ascii') + b"\n0000000000 65535 f \n"
+    for off in offsets[1:]:
+        xref += f"{off:010d} 00000 n \n".encode('ascii')
+        
+    trailer = b"trailer\n<< /Size " + str(len(objs) + 1).encode('ascii') + b" /Root 1 0 R >>\nstartxref\n" + str(xref_offset).encode('ascii') + b"\n%%EOF\n"
+    
+    pdf_bytes = header + b"".join(objs) + xref + trailer
+
     with open(filepath, 'wb') as f:
         f.write(pdf_bytes)
     return len(pdf_bytes)
