@@ -42,6 +42,17 @@ YEARS = [
     "1st Year", "2nd Year", "3rd Year", "4th Year"
 ]
 
+def db_get(model, id_val):
+    """Universal model getter compatible with SQLAlchemy 1.x and 2.x."""
+    try:
+        if hasattr(db.session, 'get'):
+            res = db_get(model, id_val)
+            if res is not None:
+                return res
+    except Exception:
+        pass
+    return model.query.get(id_val)
+
 
 # =====================================================================
 # SYSTEM & HEALTH CHECK
@@ -83,7 +94,7 @@ def health_check():
 def dashboard():
     """Essential study materials dashboard metrics for authenticated user."""
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user:
         return jsonify({'message': 'Unauthorized'}), 401
 
@@ -133,7 +144,7 @@ def dashboard():
 def update_profile():
     """Update essential profile information (name, department, graduation year)."""
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user:
         return jsonify({'message': 'Unauthorized'}), 401
 
@@ -172,7 +183,7 @@ def update_profile():
 def get_study_materials_meta():
     """Return academic metadata: departments, semesters, years, material types, and existing subjects."""
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user:
         return jsonify({'message': 'Unauthorized'}), 401
 
@@ -223,7 +234,7 @@ def get_study_materials():
     - Staff/admins can see all materials, filter by pending/approved/rejected, and approve/reject.
     """
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user:
         return jsonify({'message': 'Unauthorized'}), 401
 
@@ -307,7 +318,7 @@ def upload_study_material():
     Validates PDF format, file size, and all required academic fields.
     """
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user:
         return jsonify({'message': 'Unauthorized'}), 401
 
@@ -411,7 +422,7 @@ def upload_study_material():
 def get_pending_study_materials():
     """Retrieve all pending study materials for staff review."""
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user or user.role not in ['staff', 'admin']:
         return jsonify({'message': 'Access denied. Only authorized staff accounts can view pending approvals.'}), 403
 
@@ -426,11 +437,11 @@ def get_pending_study_materials():
 def approve_study_material(id):
     """Staff approves an uploaded study material."""
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user or user.role not in ['staff', 'admin']:
         return jsonify({'message': 'Access denied. Only authorized staff accounts can approve study materials.'}), 403
 
-    material = db.session.get(StudyMaterial, int(id))
+    material = db_get(StudyMaterial, int(id))
     if not material:
         return jsonify({'message': 'Study material not found.'}), 404
 
@@ -455,11 +466,11 @@ def approve_study_material(id):
 def reject_study_material(id):
     """Staff rejects an uploaded study material with reason."""
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user or user.role not in ['staff', 'admin']:
         return jsonify({'message': 'Access denied. Only authorized staff accounts can reject study materials.'}), 403
 
-    material = db.session.get(StudyMaterial, int(id))
+    material = db_get(StudyMaterial, int(id))
     if not material:
         return jsonify({'message': 'Study material not found.'}), 404
 
@@ -489,11 +500,11 @@ def reject_study_material(id):
 def preview_study_material(id):
     """Preview study material PDF inline (in-browser / modal)."""
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user:
         return jsonify({'message': 'Unauthorized'}), 401
 
-    material = db.session.get(StudyMaterial, int(id))
+    material = db_get(StudyMaterial, int(id))
     if not material:
         return jsonify({'message': 'Study material not found.'}), 404
 
@@ -522,11 +533,11 @@ def download_study_material(id):
     STRICT RULE: Only approved materials should be visible and downloadable by students.
     """
     current_user_id = get_jwt_identity()
-    user = db.session.get(User, int(current_user_id))
+    user = db_get(User, int(current_user_id))
     if not user:
         return jsonify({'message': 'Unauthorized'}), 401
 
-    material = db.session.get(StudyMaterial, int(id))
+    material = db_get(StudyMaterial, int(id))
     if not material:
         return jsonify({'message': 'Study material not found.'}), 404
 
@@ -560,7 +571,7 @@ def delete_study_material(id):
     if not user:
         return jsonify({'message': 'Unauthorized'}), 401
 
-    material = db.session.get(StudyMaterial, int(id))
+    material = db_get(StudyMaterial, int(id))
     if not material:
         return jsonify({'message': 'Study material not found.'}), 404
 

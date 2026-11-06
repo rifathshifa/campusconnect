@@ -139,7 +139,7 @@ const ResetPassword = () => {
           </div>
         )}
 
-        <div className="text-center mt-4 border-top border-secondary pt-3">
+        <div className="text-center mt-4 border-top pt-3" style={{ borderColor: 'var(--cc-border-subtle)' }}>
           <Link to="/login" className="btn-link d-inline-flex align-items-center gap-2 small">
             <ArrowLeft size={14} /> Back to Sign In
           </Link>

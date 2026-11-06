@@ -82,19 +82,17 @@ const Register = () => {
         </div>
 
         {/* Role Tabs */}
-        <div className="d-flex mb-4 p-1 rounded border" style={{ backgroundColor: 'var(--cc-navy-main)', borderColor: 'var(--cc-navy-light)', gap: '4px' }}>
+        <div className="cc-role-tab-group mb-4">
           <button
             type="button"
-            className={`btn flex-fill py-2 text-center border-0 font-heading small ${role === 'student' ? 'btn-primary' : 'text-light opacity-75'}`}
-            style={role !== 'student' ? { background: 'transparent', boxShadow: 'none' } : {}}
+            className={`cc-role-tab ${role === 'student' ? 'active' : ''}`}
             onClick={() => { setRole('student'); setError(null); }}
           >
             Register as Student
           </button>
           <button
             type="button"
-            className={`btn flex-fill py-2 text-center border-0 font-heading small ${role === 'staff' ? 'btn-primary' : 'text-light opacity-75'}`}
-            style={role !== 'staff' ? { background: 'transparent', boxShadow: 'none' } : {}}
+            className={`cc-role-tab ${role === 'staff' ? 'active' : ''}`}
             onClick={() => { setRole('staff'); setError(null); }}
           >
             Register as Staff

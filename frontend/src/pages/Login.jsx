@@ -84,28 +84,25 @@ const Login = () => {
           <p className="text-muted">Access the CampusConnect portal</p>
         </div>
 
-        {/* Dynamic Tabs */}
-        <div className="d-flex mb-4 p-1 rounded border" style={{ backgroundColor: 'var(--cc-navy-main)', borderColor: 'var(--cc-navy-light)', gap: '4px' }}>
+        {/* Dynamic Role Tabs */}
+        <div className="cc-role-tab-group mb-4">
           <button
             type="button"
-            className={`btn flex-fill py-2 text-center border-0 font-heading small ${selectedRole === 'student' ? 'btn-primary' : 'text-light opacity-75'}`}
-            style={selectedRole !== 'student' ? { background: 'transparent', boxShadow: 'none' } : {}}
+            className={`cc-role-tab ${selectedRole === 'student' ? 'active' : ''}`}
             onClick={() => { setSelectedRole('student'); setError(null); }}
           >
             Student
           </button>
           <button
             type="button"
-            className={`btn flex-fill py-2 text-center border-0 font-heading small ${selectedRole === 'staff' ? 'btn-primary' : 'text-light opacity-75'}`}
-            style={selectedRole !== 'staff' ? { background: 'transparent', boxShadow: 'none' } : {}}
+            className={`cc-role-tab ${selectedRole === 'staff' ? 'active' : ''}`}
             onClick={() => { setSelectedRole('staff'); setError(null); }}
           >
             Staff
           </button>
           <button
             type="button"
-            className={`btn flex-fill py-2 text-center border-0 font-heading small ${selectedRole === 'admin' ? 'btn-primary' : 'text-light opacity-75'}`}
-            style={selectedRole !== 'admin' ? { background: 'transparent', boxShadow: 'none' } : {}}
+            className={`cc-role-tab ${selectedRole === 'admin' ? 'active' : ''}`}
             onClick={() => { setSelectedRole('admin'); setError(null); }}
           >
             Admin

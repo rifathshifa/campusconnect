@@ -84,9 +84,9 @@ const ForgotPassword = () => {
             </p>
 
             {resetLink && (
-              <div className="mt-4 p-3 bg-navy-main border border-secondary rounded text-start animated-fade-in" style={{ backgroundColor: 'var(--cc-navy-main)' }}>
+              <div className="mt-4 p-3 rounded border text-start animated-fade-in" style={{ backgroundColor: 'var(--cc-bg-elevated)', borderColor: 'var(--cc-border-subtle)' }}>
                 <span className="badge bg-gold text-dark mb-2 font-heading px-2 py-1">📬 Simulated Email Delivery</span>
-                <p className="text-light small mb-2">We've simulated sending a recovery email in development mode:</p>
+                <p className="small mb-2" style={{ color: 'var(--cc-text-primary)' }}>We've simulated sending a recovery email in development mode:</p>
                 <div className="d-grid mt-3">
                   <a href={resetLink} className="btn btn-outline-primary btn-sm text-center">
                     Reset Your Password Now
