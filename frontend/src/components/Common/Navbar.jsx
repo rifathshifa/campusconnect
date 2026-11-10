@@ -79,26 +79,26 @@ const Navbar = () => {
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <Link className="nav-link d-flex align-items-center gap-1" to="/">
-                <Home size={16} /> Home
+                <Home size={15} /> Home
               </Link>
             </li>
             {isAuthenticated && (
               <>
                 <li className="nav-item">
                   <Link className="nav-link d-flex align-items-center gap-1" to="/dashboard">
-                    <LayoutDashboard size={16} /> Dashboard
+                    <LayoutDashboard size={15} /> Dashboard
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link d-flex align-items-center gap-1 text-gold fw-semibold" to="/study-materials">
-                    <BookOpen size={16} className="text-gold" /> Study Materials
+                  <Link className="nav-link d-flex align-items-center gap-1 fw-medium" to="/study-materials">
+                    <BookOpen size={15} className="text-gold" /> Library
                   </Link>
                 </li>
                 {isStaff && (
                   <li className="nav-item">
-                    <Link className="nav-link d-flex align-items-center gap-1 text-warning fw-semibold" to="/study-materials?tab=pending">
-                      <ShieldCheck size={16} />
-                      <span>Pending Approvals</span>
+                    <Link className="nav-link d-flex align-items-center gap-1 text-warning fw-medium" to="/study-materials?tab=pending">
+                      <ShieldCheck size={15} />
+                      <span>Pending</span>
                       {pendingCount > 0 && (
                         <span className="badge bg-danger text-light ms-1 rounded-pill animate-pulse">
                           {pendingCount}
@@ -110,40 +110,41 @@ const Navbar = () => {
               </>
             )}
           </ul>
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-2">
             <button
               onClick={toggleTheme}
               className="theme-toggle-btn"
               title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
             {isAuthenticated ? (
-              <>
-                <span className="text-light d-flex align-items-center gap-1 font-heading me-1">
-                  <User size={16} className="text-gold" />
-                  Hi, <strong className="text-gold">{user?.full_name || user?.username}</strong>
-                  <span className={`badge ms-2 text-capitalize ${getBadgeClass(user?.role)}`} style={{ fontSize: '0.75rem', padding: '0.3em 0.6em', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <div className="d-flex align-items-center gap-2">
+                <span className="d-flex align-items-center gap-1.5 px-2.5 py-1 rounded border text-light fs-8 font-heading" style={{ borderColor: 'var(--cc-border-subtle)', backgroundColor: 'var(--cc-bg-surface)' }}>
+                  <User size={13} className="text-gold" />
+                  <span className="fw-semibold">{user?.full_name || user?.username}</span>
+                  <span className={`badge ms-1 text-capitalize ${getBadgeClass(user?.role)}`} style={{ fontSize: '0.7rem', padding: '0.2em 0.5em' }}>
                     {user?.role}
                   </span>
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 py-1 px-3"
+                  className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 py-1 px-2.5 fs-8"
+                  title="Sign out"
                 >
-                  <LogOut size={14} /> Logout
+                  <LogOut size={13} /> Logout
                 </button>
-              </>
+              </div>
             ) : (
-              <>
-                <Link to="/login" className="btn btn-link btn-sm d-flex align-items-center gap-1 text-light">
-                  <LogIn size={16} /> Login
+              <div className="d-flex align-items-center gap-2">
+                <Link to="/login" className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 py-1 px-3 fs-8">
+                  <LogIn size={14} /> Sign In
                 </Link>
-                <Link to="/register" className="btn btn-primary btn-sm d-flex align-items-center gap-1 py-1 px-3">
-                  <UserPlus size={16} /> Register
+                <Link to="/register" className="btn btn-primary btn-sm d-flex align-items-center gap-1 py-1 px-3 fs-8">
+                  <UserPlus size={14} /> Register
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>

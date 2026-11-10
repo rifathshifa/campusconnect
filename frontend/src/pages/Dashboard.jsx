@@ -6,8 +6,8 @@ import { API_URL } from '../config/api';
 import { SkeletonLoader } from '../components/Common/Loader';
 import {
   BookOpen, UploadCloud, ShieldCheck, CheckCircle2, Clock, XCircle,
-  FileText, Download, Eye, ArrowRight, Plus, RefreshCw, GraduationCap,
-  Building2, AlertCircle, Check, X, ChevronRight, User
+  FileText, Download, Eye, ArrowRight, RefreshCw,
+  AlertCircle, Check, X, ChevronRight, User
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -74,7 +74,7 @@ const Dashboard = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Approval failed.');
 
-      toast.success(`Approved "${title}"! Published to College Library.`);
+      toast.success(`Approved "${title}"`);
       fetchDashboard();
     } catch (err) {
       toast.error(err.message);
@@ -107,7 +107,7 @@ const Dashboard = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Rejection failed.');
 
-      toast.info('Study material rejected with feedback.');
+      toast.info('Document rejected');
       setShowRejectModal(false);
       setRejectMaterialId(null);
       setRejectReason('');
@@ -174,7 +174,7 @@ const Dashboard = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      toast.success('Download finished!');
+      toast.success('Download finished');
     } catch (err) {
       toast.error(err.message);
     }
@@ -190,18 +190,18 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="container py-5 min-vh-100">
+      <div className="container py-4 min-vh-100">
         <div className="mb-4">
-          <SkeletonLoader height="120px" />
+          <SkeletonLoader height="72px" />
         </div>
-        <div className="row g-4 mb-4">
+        <div className="row g-3 mb-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="col-sm-6 col-lg-3">
-              <SkeletonLoader height="100px" />
+            <div key={i} className="col-6 col-lg-3">
+              <SkeletonLoader height="86px" />
             </div>
           ))}
         </div>
-        <SkeletonLoader height="300px" />
+        <SkeletonLoader height="340px" />
       </div>
     );
   }
@@ -209,11 +209,11 @@ const Dashboard = () => {
   if (error) {
     return (
       <div className="container py-5 min-vh-100">
-        <div className="card cc-glass-card border-danger text-center p-5">
-          <AlertCircle size={40} className="text-danger mx-auto mb-3" />
-          <h4 className="text-light">Unable to load dashboard</h4>
-          <p className="text-muted">{error}</p>
-          <button onClick={fetchDashboard} className="btn btn-sm btn-outline-danger mx-auto mt-2">
+        <div className="card cc-glass-card border-danger text-center p-4">
+          <AlertCircle size={32} className="text-danger mx-auto mb-2" />
+          <h5 className="text-light">Unable to load dashboard</h5>
+          <p className="text-muted small mb-3">{error}</p>
+          <button onClick={fetchDashboard} className="btn btn-sm btn-outline-danger mx-auto">
             Retry
           </button>
         </div>
@@ -227,171 +227,136 @@ const Dashboard = () => {
   const pendingApprovals = dashboardData?.pending_approvals || [];
 
   return (
-    <div className="container py-5 animated-fade-in min-vh-100">
-      {/* 1. Welcome Header */}
-      <div className="card cc-glass-card mb-4 border-gold-subtle overflow-hidden">
-        <div className="card-body p-4 p-md-5">
-          <div className="row align-items-center justify-content-between g-4">
-            <div className="col-lg-8">
-              <div className="d-flex align-items-center gap-2 mb-2">
-                <span className="badge bg-gold text-dark fw-bold px-3 py-1.5 text-uppercase">
-                  {isStaff ? 'Staff Portal' : 'Student Portal'}
-                </span>
-                <span className="badge bg-navy-main text-light border border-secondary border-opacity-25 px-3 py-1.5">
-                  {user?.department || user?.major || 'General Academics'}
-                </span>
-                {user?.graduation_year && (
-                  <span className="badge bg-navy-main text-light border border-secondary border-opacity-25 px-3 py-1.5">
-                    Class of {user.graduation_year}
-                  </span>
-                )}
-              </div>
-
-              <h2 className="display-6 font-heading fw-bold text-light mb-1">
-                Welcome, <span className="text-gold">{user?.full_name || user?.username}</span>
-              </h2>
-              <p className="text-muted fs-6 mb-0">
-                {isStaff
-                  ? 'Review pending student submissions, preview uploaded PDFs, and publish verified study materials.'
-                  : 'Access verified lecture notes, textbooks, and lab manuals shared by college seniors and peers.'}
-              </p>
-            </div>
-
-            <div className="col-lg-4 text-lg-end">
-              <div className="d-flex flex-wrap justify-content-lg-end gap-2">
-                <Link to="/study-materials" className="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm">
-                  <BookOpen size={16} />
-                  <span>Open Library</span>
-                </Link>
-                <button
-                  onClick={fetchDashboard}
-                  className="btn btn-outline-secondary text-light d-inline-flex align-items-center gap-1"
-                  title="Refresh"
-                >
-                  <RefreshCw size={15} />
-                </button>
-              </div>
-            </div>
+    <div className="container py-4 animated-fade-in min-vh-100">
+      {/* 1. Workspace Header */}
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-2 border-bottom" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+        <div className="d-flex align-items-center gap-3">
+          <div className="p-2.5 rounded border d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-subtle)' }}>
+            <User size={22} className="text-gold" />
           </div>
-        </div>
-      </div>
-
-      {/* 2. Stat Cards Grid */}
-      <div className="row g-3 mb-4">
-        {/* Card 1: Total Approved Library Materials */}
-        <div className="col-6 col-lg-3">
-          <div className="card cc-glass-card h-100 p-3 p-md-4 border-start border-4 border-primary">
-            <div className="d-flex justify-content-between align-items-start mb-2">
-              <span className="text-muted fs-8 fw-semibold text-uppercase">Library Materials</span>
-              <BookOpen className="text-primary" size={20} />
-            </div>
-            <h3 className="font-heading text-light fw-bold mb-1">{counts.approved_materials || 0}</h3>
-            <span className="text-muted fs-8">Staff-verified resources</span>
-          </div>
-        </div>
-
-        {/* Card 2: My Uploads */}
-        <div className="col-6 col-lg-3">
-          <div className="card cc-glass-card h-100 p-3 p-md-4 border-start border-4 border-warning">
-            <div className="d-flex justify-content-between align-items-start mb-2">
-              <span className="text-muted fs-8 fw-semibold text-uppercase">My Uploads</span>
-              <UploadCloud className="text-warning" size={20} />
-            </div>
-            <h3 className="font-heading text-light fw-bold mb-1">{counts.my_uploads || 0}</h3>
-            <span className="text-muted fs-8">
-              {counts.my_approved || 0} Approved • {counts.my_pending || 0} Pending
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Approved Submissions */}
-        <div className="col-6 col-lg-3">
-          <div className="card cc-glass-card h-100 p-3 p-md-4 border-start border-4 border-success">
-            <div className="d-flex justify-content-between align-items-start mb-2">
-              <span className="text-muted fs-8 fw-semibold text-uppercase">Approved Submissions</span>
-              <CheckCircle2 className="text-success" size={20} />
-            </div>
-            <h3 className="font-heading text-light fw-bold mb-1">{counts.my_approved || 0}</h3>
-            <span className="text-success fs-8 fw-medium">Active in Library</span>
-          </div>
-        </div>
-
-        {/* Card 4: Staff Pending Action or Student Pending */}
-        <div className="col-6 col-lg-3">
-          <div className="card cc-glass-card h-100 p-3 p-md-4 border-start border-4 border-gold">
-            <div className="d-flex justify-content-between align-items-start mb-2">
-              <span className="text-muted fs-8 fw-semibold text-uppercase">
-                {isStaff ? 'Pending Review' : 'Under Review'}
-              </span>
-              <Clock className="text-gold" size={20} />
-            </div>
-            <h3 className="font-heading text-light fw-bold mb-1">
-              {isStaff ? counts.pending_review || 0 : counts.my_pending || 0}
-            </h3>
-            <span className="text-gold fs-8 fw-medium">
-              {isStaff ? 'Requires staff action' : 'Awaiting staff approval'}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Staff Review Section (if Staff) */}
-      {isStaff && (
-        <div className="card cc-glass-card mb-4 border-warning border-opacity-50">
-          <div className="card-header bg-navy-main border-secondary border-opacity-25 py-3 d-flex align-items-center justify-content-between">
+          <div>
             <div className="d-flex align-items-center gap-2">
-              <ShieldCheck className="text-warning" size={20} />
-              <h5 className="font-heading fw-bold text-light mb-0">Pending Submissions Requiring Approval</h5>
-              <span className="badge bg-warning text-dark ms-2">{pendingApprovals.length} Pending</span>
+              <h1 className="h4 font-heading fw-bold text-light mb-0">
+                {user?.full_name || user?.username}
+              </h1>
+              <span className="badge bg-gold text-dark text-capitalize font-heading" style={{ fontSize: '0.7rem' }}>
+                {user?.role}
+              </span>
             </div>
-            <Link to="/study-materials?tab=pending" className="btn btn-sm btn-outline-warning d-flex align-items-center gap-1">
+            <div className="text-muted fs-8 mt-0.5">
+              <span>{user?.department || user?.major || 'Academics'}</span>
+              {user?.graduation_year && <span> • Class of {user.graduation_year}</span>}
+            </div>
+          </div>
+        </div>
+
+        <div className="d-flex align-items-center gap-2">
+          <Link to="/study-materials" className="btn btn-primary btn-sm d-inline-flex align-items-center gap-1.5 px-3 py-1.5 shadow-sm">
+            <BookOpen size={15} />
+            <span>Library</span>
+          </Link>
+          <button
+            onClick={fetchDashboard}
+            className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center p-1.5"
+            title="Refresh"
+          >
+            <RefreshCw size={14} />
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Linear-Style Metric Cards */}
+      <div className="row g-3 mb-4">
+        <div className="col-6 col-lg-3">
+          <div className="card cc-glass-card h-100 p-3 border-start border-3 border-primary">
+            <span className="text-muted fs-8 fw-semibold text-uppercase tracking-wider">Library Materials</span>
+            <div className="h3 font-heading text-light fw-bold my-1">{counts.approved_materials || 0}</div>
+          </div>
+        </div>
+
+        <div className="col-6 col-lg-3">
+          <div className="card cc-glass-card h-100 p-3 border-start border-3 border-warning">
+            <span className="text-muted fs-8 fw-semibold text-uppercase tracking-wider">My Uploads</span>
+            <div className="h3 font-heading text-light fw-bold my-1">{counts.my_uploads || 0}</div>
+          </div>
+        </div>
+
+        <div className="col-6 col-lg-3">
+          <div className="card cc-glass-card h-100 p-3 border-start border-3 border-success">
+            <span className="text-muted fs-8 fw-semibold text-uppercase tracking-wider">Approved</span>
+            <div className="h3 font-heading text-light fw-bold my-1">{counts.my_approved || 0}</div>
+          </div>
+        </div>
+
+        <div className="col-6 col-lg-3">
+          <div className="card cc-glass-card h-100 p-3 border-start border-3 border-gold">
+            <span className="text-muted fs-8 fw-semibold text-uppercase tracking-wider">
+              {isStaff ? 'Pending Review' : 'Under Review'}
+            </span>
+            <div className="h3 font-heading text-light fw-bold my-1">
+              {isStaff ? counts.pending_review || 0 : counts.my_pending || 0}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Staff Review Queue (if Staff) */}
+      {isStaff && (
+        <div className="card cc-glass-card mb-4 border-warning border-opacity-40">
+          <div className="card-header bg-transparent border-bottom py-2.5 px-3 d-flex align-items-center justify-content-between" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+            <div className="d-flex align-items-center gap-2">
+              <ShieldCheck className="text-warning" size={17} />
+              <span className="font-heading fw-bold text-light fs-7">Pending Submissions</span>
+              <span className="badge bg-warning text-dark fs-8">{pendingApprovals.length}</span>
+            </div>
+            <Link to="/study-materials?tab=pending" className="btn btn-sm btn-link text-warning p-0 fs-8 d-flex align-items-center gap-0.5">
               <span>View All</span>
-              <ChevronRight size={14} />
+              <ChevronRight size={13} />
             </Link>
           </div>
 
-          <div className="card-body p-3 p-md-4">
+          <div className="card-body p-3">
             {pendingApprovals.length === 0 ? (
-              <div className="text-center py-4 text-muted">
-                <CheckCircle2 size={36} className="text-success mb-2" />
-                <p className="mb-0">All student uploads have been reviewed! There are no pending approvals.</p>
+              <div className="text-center py-3 text-muted fs-8">
+                <CheckCircle2 size={24} className="text-success mb-1" />
+                <div>No pending approvals</div>
               </div>
             ) : (
-              <div className="row g-3">
+              <div className="row g-2">
                 {pendingApprovals.map((item) => (
                   <div key={item.id} className="col-12 col-md-6 col-xl-4">
-                    <div className="p-3 rounded bg-navy-deep border border-secondary border-opacity-25 h-100 d-flex flex-column">
-                      <div className="d-flex align-items-start justify-content-between gap-2 mb-2">
-                        <span className="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 fs-8">
+                    <div className="p-2.5 rounded border h-100 d-flex flex-column" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-subtle)' }}>
+                      <div className="d-flex align-items-center justify-content-between gap-2 mb-1.5">
+                        <span className="badge bg-warning bg-opacity-20 text-warning fs-8">
                           {item.material_type}
                         </span>
                         <span className="text-muted fs-8">{formatBytes(item.file_size)}</span>
                       </div>
 
-                      <h6 className="text-light fw-bold mb-1 font-heading line-clamp-2" title={item.title}>
+                      <h6 className="text-light fw-bold mb-1 font-heading fs-7 text-truncate" title={item.title}>
                         {item.title}
                       </h6>
-                      <p className="text-gold fs-8 mb-2 fw-medium">{item.subject} • {item.department}</p>
-                      <p className="text-muted fs-8 mb-3">By: <strong className="text-light">{item.uploader_name}</strong></p>
+                      <div className="text-gold fs-8 mb-1">{item.subject} • {item.department}</div>
+                      <div className="text-muted fs-8 mb-2">By: {item.uploader_name}</div>
 
-                      <div className="mt-auto d-flex gap-2 pt-2 border-top border-secondary border-opacity-25">
+                      <div className="mt-auto d-flex gap-1.5 pt-2 border-top" style={{ borderColor: 'var(--cc-border-subtle)' }}>
                         <button
                           onClick={() => handleOpenPreview(item)}
-                          className="btn btn-sm btn-outline-secondary text-light flex-grow-1 d-flex align-items-center justify-content-center gap-1 fs-8"
+                          className="btn btn-sm btn-outline-secondary flex-grow-1 py-1 fs-8"
                         >
-                          <Eye size={12} /> Preview
+                          <Eye size={12} className="me-1" /> Preview
                         </button>
                         <button
                           onClick={() => handleApprove(item.id, item.title)}
                           disabled={actionLoadingId === item.id}
-                          className="btn btn-sm btn-success flex-grow-1 d-flex align-items-center justify-content-center gap-1 fs-8"
+                          className="btn btn-sm btn-success flex-grow-1 py-1 fs-8"
                         >
-                          <Check size={12} /> {actionLoadingId === item.id ? 'Approving...' : 'Approve'}
+                          <Check size={12} className="me-1" /> Approve
                         </button>
                         <button
                           onClick={() => handleOpenRejectModal(item.id)}
-                          className="btn btn-sm btn-outline-danger px-2 fs-8"
-                          title="Reject with reason"
+                          className="btn btn-sm btn-outline-danger px-2 py-1 fs-8"
+                          title="Reject"
                         >
                           <X size={12} />
                         </button>
@@ -405,90 +370,82 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* 4. Student View: My Uploads & Recent Library Materials */}
-      <div className="row g-4">
-        {/* Left: My Recent Uploads with Approval Status */}
+      {/* 4. Two-Column Workspace: My Uploads & Recent Additions */}
+      <div className="row g-3">
+        {/* Left: My Uploads */}
         <div className="col-lg-7">
           <div className="card cc-glass-card h-100 border-0">
-            <div className="card-header bg-navy-main border-secondary border-opacity-25 py-3 d-flex align-items-center justify-content-between">
+            <div className="card-header bg-transparent border-bottom py-2.5 px-3 d-flex align-items-center justify-content-between" style={{ borderColor: 'var(--cc-border-subtle)' }}>
               <div className="d-flex align-items-center gap-2">
-                <UploadCloud className="text-gold" size={18} />
-                <h5 className="font-heading fw-bold text-light mb-0">My Uploaded Study Materials</h5>
+                <UploadCloud className="text-gold" size={17} />
+                <span className="font-heading fw-bold text-light fs-7">My Uploads</span>
               </div>
-              <Link to="/study-materials?tab=my_uploads" className="btn btn-sm btn-outline-primary fs-8">
+              <Link to="/study-materials?tab=my_uploads" className="btn btn-sm btn-link text-primary p-0 fs-8">
                 View All ({counts.my_uploads || 0})
               </Link>
             </div>
 
-            <div className="card-body p-3 p-md-4">
+            <div className="card-body p-3">
               {myRecentUploads.length === 0 ? (
-                <div className="text-center py-5">
-                  <UploadCloud size={40} className="text-muted opacity-50 mb-2" />
-                  <h6 className="text-light">You haven't uploaded any study materials yet</h6>
-                  <p className="text-muted fs-8 max-w-500 mx-auto mb-3">
-                    Help your college peers and juniors by sharing your lecture notes, lab manuals, and question papers.
-                  </p>
-                  <Link to="/study-materials" className="btn btn-sm btn-primary d-inline-flex align-items-center gap-1">
-                    <Plus size={14} /> Upload Your First Document
+                <div className="text-center py-4 text-muted fs-8">
+                  <UploadCloud size={28} className="opacity-40 mb-1" />
+                  <p className="mb-2">No documents uploaded yet</p>
+                  <Link to="/study-materials" className="btn btn-sm btn-primary py-1 px-2.5 fs-8">
+                    Upload PDF
                   </Link>
                 </div>
               ) : (
-                <div className="d-flex flex-column gap-3">
+                <div className="d-flex flex-column gap-2">
                   {myRecentUploads.map((item) => (
-                    <div key={item.id} className="p-3 rounded bg-navy-deep border border-secondary border-opacity-25">
-                      <div className="d-flex align-items-start justify-content-between gap-2 mb-2">
-                        <div>
-                          <h6 className="text-light fw-bold mb-1 font-heading" title={item.title}>
+                    <div key={item.id} className="p-2.5 rounded border" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-subtle)' }}>
+                      <div className="d-flex align-items-start justify-content-between gap-2">
+                        <div className="overflow-hidden">
+                          <h6 className="text-light fw-bold mb-0.5 font-heading fs-7 text-truncate" title={item.title}>
                             {item.title}
                           </h6>
-                          <div className="text-gold fs-8 fw-medium mb-1">
-                            {item.subject} • {item.semester} • {item.material_type}
+                          <div className="text-muted fs-8">
+                            {item.subject} • {item.semester} • {formatBytes(item.file_size)}
                           </div>
                         </div>
 
-                        {/* Status Badge */}
                         {item.approval_status === 'approved' && (
-                          <span className="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 d-inline-flex align-items-center gap-1">
-                            <CheckCircle2 size={12} /> Approved
+                          <span className="badge bg-success bg-opacity-20 text-success fs-8 flex-shrink-0">
+                            Approved
                           </span>
                         )}
                         {item.approval_status === 'pending' && (
-                          <span className="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 d-inline-flex align-items-center gap-1">
-                            <Clock size={12} /> Pending Review
+                          <span className="badge bg-warning bg-opacity-20 text-warning fs-8 flex-shrink-0">
+                            Pending
                           </span>
                         )}
                         {item.approval_status === 'rejected' && (
-                          <span className="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 d-inline-flex align-items-center gap-1">
-                            <XCircle size={12} /> Rejected
+                          <span className="badge bg-danger bg-opacity-20 text-danger fs-8 flex-shrink-0">
+                            Rejected
                           </span>
                         )}
                       </div>
 
-                      {/* Rejection Reason Box */}
                       {item.approval_status === 'rejected' && item.rejection_reason && (
-                        <div className="p-2 mb-2 rounded bg-danger bg-opacity-10 border border-danger border-opacity-25 text-danger fs-8">
-                          <strong>Staff Feedback: </strong>{item.rejection_reason}
+                        <div className="mt-2 p-1.5 rounded bg-danger bg-opacity-10 border border-danger border-opacity-25 text-danger fs-8">
+                          {item.rejection_reason}
                         </div>
                       )}
 
-                      <div className="d-flex align-items-center justify-content-between text-muted fs-8 pt-2 border-top border-secondary border-opacity-10">
-                        <span>{formatBytes(item.file_size)} • {item.original_filename}</span>
-                        <div className="d-flex gap-2">
+                      <div className="d-flex justify-content-end gap-2 mt-2 pt-1.5 border-top" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+                        <button
+                          onClick={() => handleOpenPreview(item)}
+                          className="btn btn-sm btn-link text-light p-0 fs-8 text-decoration-none"
+                        >
+                          <Eye size={12} className="me-1" /> Preview
+                        </button>
+                        {item.approval_status === 'approved' && (
                           <button
-                            onClick={() => handleOpenPreview(item)}
-                            className="btn btn-sm btn-link text-light p-0 fs-8 text-decoration-none d-flex align-items-center gap-1"
+                            onClick={() => handleDownload(item)}
+                            className="btn btn-sm btn-link text-gold p-0 fs-8 text-decoration-none ms-2"
                           >
-                            <Eye size={12} /> Preview
+                            <Download size={12} className="me-1" /> Download
                           </button>
-                          {item.approval_status === 'approved' && (
-                            <button
-                              onClick={() => handleDownload(item)}
-                              className="btn btn-sm btn-link text-gold p-0 fs-8 text-decoration-none d-flex align-items-center gap-1"
-                            >
-                              <Download size={12} /> Download
-                            </button>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -498,37 +455,35 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right: Recently Approved Study Materials */}
+        {/* Right: Recent Library Additions */}
         <div className="col-lg-5">
           <div className="card cc-glass-card h-100 border-0">
-            <div className="card-header bg-navy-main border-secondary border-opacity-25 py-3 d-flex align-items-center justify-content-between">
+            <div className="card-header bg-transparent border-bottom py-2.5 px-3 d-flex align-items-center justify-content-between" style={{ borderColor: 'var(--cc-border-subtle)' }}>
               <div className="d-flex align-items-center gap-2">
-                <BookOpen className="text-primary" size={18} />
-                <h5 className="font-heading fw-bold text-light mb-0">Recently Approved Library Materials</h5>
+                <BookOpen className="text-primary" size={17} />
+                <span className="font-heading fw-bold text-light fs-7">Recent Additions</span>
               </div>
-              <Link to="/study-materials" className="btn btn-sm btn-outline-primary fs-8">
+              <Link to="/study-materials" className="btn btn-sm btn-link text-primary p-0 fs-8">
                 Browse All
               </Link>
             </div>
 
-            <div className="card-body p-3 p-md-4">
+            <div className="card-body p-3">
               {recentMaterials.length === 0 ? (
-                <div className="text-center py-4 text-muted">
-                  <BookOpen size={30} className="opacity-50 mb-2" />
-                  <p className="mb-0 fs-7">No approved materials available yet.</p>
+                <div className="text-center py-4 text-muted fs-8">
+                  <BookOpen size={28} className="opacity-40 mb-1" />
+                  <p className="mb-0">No materials available yet</p>
                 </div>
               ) : (
-                <div className="d-flex flex-column gap-3">
+                <div className="d-flex flex-column gap-2">
                   {recentMaterials.map((file) => (
                     <div
                       key={file.id}
-                      className="p-3 rounded bg-navy-deep border border-secondary border-opacity-25 d-flex align-items-center justify-content-between gap-3"
+                      className="p-2.5 rounded border d-flex align-items-center justify-content-between gap-2"
+                      style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-subtle)' }}
                     >
                       <div className="overflow-hidden">
-                        <span className="badge bg-navy-main text-gold border border-gold border-opacity-25 fs-8 mb-1">
-                          {file.material_type}
-                        </span>
-                        <h6 className="text-light fw-bold mb-0 text-truncate font-heading" title={file.title}>
+                        <h6 className="text-light fw-bold mb-0.5 text-truncate font-heading fs-7" title={file.title}>
                           {file.title}
                         </h6>
                         <span className="text-muted fs-8 d-block text-truncate">
@@ -539,30 +494,23 @@ const Dashboard = () => {
                       <div className="d-flex align-items-center gap-1 flex-shrink-0">
                         <button
                           onClick={() => handleOpenPreview(file)}
-                          className="btn btn-sm btn-outline-secondary text-light p-2"
-                          title="Preview PDF"
+                          className="btn btn-sm btn-outline-secondary p-1.5"
+                          title="Preview"
                         >
-                          <Eye size={14} />
+                          <Eye size={13} />
                         </button>
                         <button
                           onClick={() => handleDownload(file)}
-                          className="btn btn-sm btn-primary p-2"
-                          title="Download PDF"
+                          className="btn btn-sm btn-primary p-1.5"
+                          title="Download"
                         >
-                          <Download size={14} />
+                          <Download size={13} />
                         </button>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-
-              <div className="mt-4 pt-3 border-top border-secondary border-opacity-25 text-center">
-                <Link to="/study-materials" className="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-2">
-                  <span>Explore College Digital Library</span>
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
             </div>
           </div>
         </div>
@@ -572,16 +520,16 @@ const Dashboard = () => {
       {previewMaterial && (
         <div className="modal show d-block cc-modal-backdrop" tabIndex="-1">
           <div className="modal-dialog modal-xl modal-dialog-centered h-90">
-            <div className="modal-content bg-navy-main border border-secondary border-opacity-50 text-light h-100 d-flex flex-column">
-              <div className="modal-header border-secondary border-opacity-25 py-2 px-3">
+            <div className="modal-content h-100 d-flex flex-column border" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-strong)' }}>
+              <div className="modal-header py-2 px-3 border-bottom" style={{ borderColor: 'var(--cc-border-subtle)' }}>
                 <div className="d-flex align-items-center gap-2 overflow-hidden me-3">
-                  <FileText size={20} className="text-gold flex-shrink-0" />
+                  <FileText size={18} className="text-gold flex-shrink-0" />
                   <div className="overflow-hidden">
-                    <h6 className="modal-title font-heading fw-bold text-truncate mb-0">
+                    <h6 className="modal-title font-heading fw-bold text-truncate mb-0 fs-7">
                       {previewMaterial.title}
                     </h6>
                     <span className="text-muted fs-8">
-                      {previewMaterial.subject} • {previewMaterial.material_type} • {previewMaterial.department}
+                      {previewMaterial.subject} • {previewMaterial.material_type}
                     </span>
                   </div>
                 </div>
@@ -589,10 +537,10 @@ const Dashboard = () => {
                 <div className="d-flex align-items-center gap-2">
                   <button
                     onClick={() => handleDownload(previewMaterial)}
-                    className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+                    className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 py-1 px-2.5 fs-8"
                   >
-                    <Download size={14} />
-                    <span className="d-none d-sm-inline">Download PDF</span>
+                    <Download size={13} />
+                    <span>Download</span>
                   </button>
                   <button
                     type="button"
@@ -602,31 +550,27 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="modal-body p-0 flex-grow-1 position-relative bg-navy-deep">
+              <div className="modal-body p-0 flex-grow-1 position-relative" style={{ backgroundColor: 'var(--cc-bg-deep)' }}>
                 {previewLoading ? (
                   <div className="d-flex flex-column align-items-center justify-content-center h-100">
-                    <RefreshCw size={36} className="animate-spin text-gold mb-3" />
-                    <p className="text-muted">Loading secure PDF document...</p>
+                    <RefreshCw size={28} className="animate-spin text-gold mb-2" />
+                    <span className="text-muted fs-8">Loading document...</span>
                   </div>
                 ) : previewBlobUrl ? (
                   <iframe
                     src={previewBlobUrl}
                     title={previewMaterial.title}
                     className="w-100 h-100 border-0"
-                    style={{ minHeight: '600px' }}
                   />
                 ) : (
                   <div className="d-flex flex-column align-items-center justify-content-center h-100 p-4 text-center">
-                    <AlertCircle size={40} className="text-warning mb-2" />
-                    <h5 className="text-light">Preview not available in this browser</h5>
-                    <p className="text-muted fs-7">
-                      You can download the PDF file directly to view it on your device.
-                    </p>
+                    <AlertCircle size={32} className="text-warning mb-2" />
+                    <h6 className="text-light">Preview not available</h6>
                     <button
                       onClick={() => handleDownload(previewMaterial)}
-                      className="btn btn-primary btn-sm d-flex align-items-center gap-1"
+                      className="btn btn-primary btn-sm d-flex align-items-center gap-1 mt-2"
                     >
-                      <Download size={14} /> Download Document
+                      <Download size={13} /> Download PDF
                     </button>
                   </div>
                 )}
@@ -640,12 +584,11 @@ const Dashboard = () => {
       {showRejectModal && (
         <div className="modal show d-block cc-modal-backdrop" tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content bg-navy-main border border-danger border-opacity-50 text-light shadow-2xl">
-              <div className="modal-header border-secondary border-opacity-25">
-                <div className="d-flex align-items-center gap-2 text-danger">
-                  <XCircle size={20} />
-                  <h5 className="modal-title font-heading fw-bold mb-0">Reject Study Material</h5>
-                </div>
+            <div className="modal-content border" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-strong)' }}>
+              <div className="modal-header py-2.5 px-3 border-bottom" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+                <h6 className="modal-title font-heading fw-bold mb-0 fs-6 text-danger d-flex align-items-center gap-2">
+                  <XCircle size={17} /> Reject Document
+                </h6>
                 <button
                   type="button"
                   className="btn-close btn-close-white"
@@ -654,30 +597,24 @@ const Dashboard = () => {
               </div>
 
               <form onSubmit={handleConfirmReject}>
-                <div className="modal-body p-4">
-                  <p className="text-muted fs-7 mb-3">
-                    Please provide a clear reason for rejecting this document so the student understands how to improve or resubmit their material.
-                  </p>
-
-                  <div className="mb-3">
-                    <label className="form-label text-light fs-7 fw-semibold">
-                      Rejection Reason / Guidance
-                    </label>
-                    <textarea
-                      rows="4"
-                      className="form-control bg-navy-deep border-secondary border-opacity-25 text-light"
-                      placeholder="e.g., Unclear scans, duplicate content, missing Unit 4 syllabus, or inappropriate file format..."
-                      value={rejectReason}
-                      onChange={(e) => setRejectReason(e.target.value)}
-                      required
-                    />
-                  </div>
+                <div className="modal-body p-3">
+                  <label className="form-label fs-7 fw-semibold">
+                    Reason
+                  </label>
+                  <textarea
+                    rows="3"
+                    className="form-control"
+                    placeholder="Specify rejection reason..."
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    required
+                  />
                 </div>
 
-                <div className="modal-footer border-secondary border-opacity-25">
+                <div className="modal-footer py-2 px-3 border-top" style={{ borderColor: 'var(--cc-border-subtle)' }}>
                   <button
                     type="button"
-                    className="btn btn-outline-secondary text-light"
+                    className="btn btn-outline-secondary btn-sm"
                     onClick={() => setShowRejectModal(false)}
                     disabled={rejecting}
                   >
@@ -685,18 +622,18 @@ const Dashboard = () => {
                   </button>
                   <button
                     type="submit"
-                    className="btn btn-danger d-inline-flex align-items-center gap-2"
+                    className="btn btn-danger btn-sm d-inline-flex align-items-center gap-1.5"
                     disabled={rejecting}
                   >
                     {rejecting ? (
                       <>
-                        <RefreshCw size={14} className="animate-spin" />
+                        <RefreshCw size={13} className="animate-spin" />
                         <span>Rejecting...</span>
                       </>
                     ) : (
                       <>
-                        <X size={14} />
-                        <span>Confirm Rejection</span>
+                        <X size={13} />
+                        <span>Reject</span>
                       </>
                     )}
                   </button>

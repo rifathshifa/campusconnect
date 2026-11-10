@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Lock, ShieldCheck, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Lock, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 const ResetPassword = () => {
   const { resetPassword } = useAuth();
@@ -14,14 +14,13 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Extract token from query parameters
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tokenParam = params.get('token');
     if (tokenParam) {
       setToken(tokenParam);
     } else {
-      setError('Password reset token is missing. Please request a new link.');
+      setError('Password reset token is missing or invalid.');
     }
   }, [location]);
 
@@ -57,7 +56,7 @@ const ResetPassword = () => {
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
-      }, 3000);
+      }, 2500);
     } catch (err) {
       setError(err.message || 'Failed to reset password. The link may have expired.');
     } finally {
@@ -67,18 +66,17 @@ const ResetPassword = () => {
 
   return (
     <div className="container py-5 d-flex justify-content-center align-items-center min-vh-100 animated-fade-in">
-      <div className="cc-card w-100" style={{ maxWidth: '500px' }}>
+      <div className="cc-card w-100" style={{ maxWidth: '460px' }}>
         <div className="text-center mb-4">
-          <div className="text-gold mb-3 d-inline-block">
-            <Lock size={40} />
+          <div className="text-gold mb-2 d-inline-block">
+            <Lock size={32} />
           </div>
-          <h2 className="font-heading fw-bold">Reset Password</h2>
-          <p className="text-muted">Enter a new secure password for your account</p>
+          <h2 className="font-heading fw-bold fs-4 mb-0">Set New Password</h2>
         </div>
 
         {error && (
           <div className="alert alert-cc-error py-2 px-3 mb-3 d-flex align-items-center gap-2">
-            <AlertCircle size={16} />
+            <AlertCircle size={15} />
             <span>{error}</span>
           </div>
         )}
@@ -86,8 +84,8 @@ const ResetPassword = () => {
         {!success ? (
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-              <label className="form-label d-flex align-items-center gap-2">
-                <Lock size={16} className="text-gold" /> New Password
+              <label className="form-label d-flex align-items-center gap-2 fs-7">
+                <Lock size={15} className="text-gold" /> New Password
               </label>
               <input
                 type="password"
@@ -102,15 +100,15 @@ const ResetPassword = () => {
             </div>
 
             <div className="mb-4">
-              <label className="form-label d-flex align-items-center gap-2">
-                <Lock size={16} className="text-gold" /> Confirm New Password
+              <label className="form-label d-flex align-items-center gap-2 fs-7">
+                <Lock size={15} className="text-gold" /> Confirm Password
               </label>
               <input
                 type="password"
                 name="confirmPassword"
                 required
                 className="form-control"
-                placeholder="Confirm your password"
+                placeholder="Confirm password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 disabled={!token}
@@ -129,12 +127,12 @@ const ResetPassword = () => {
           </form>
         ) : (
           <div className="text-center animated-fade-in">
-            <div className="text-success mb-3">
-              <CheckCircle2 size={48} className="mx-auto" />
+            <div className="text-success mb-2">
+              <CheckCircle2 size={40} className="mx-auto" />
             </div>
-            <h4 className="font-heading text-light mb-2">Password Updated!</h4>
-            <p className="text-muted">
-              Your password has been reset successfully. Redirecting you to the sign-in page...
+            <h5 className="font-heading text-light mb-1">Password Updated</h5>
+            <p className="text-muted small mb-0">
+              Redirecting to sign-in...
             </p>
           </div>
         )}

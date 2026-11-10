@@ -5,11 +5,9 @@ import { useToast } from '../context/ToastContext';
 import { SkeletonLoader } from '../components/Common/Loader';
 import { API_URL } from '../config/api';
 import {
-  BookOpen, FileText, Download, Eye, UploadCloud, Search, Filter,
-  CheckCircle2, Clock, XCircle, AlertCircle, ShieldCheck, ChevronRight,
-  X, Plus, RefreshCw, GraduationCap, Building2, Calendar, FileCode,
-  FileSpreadsheet, BookMarked, HelpCircle, Trash2, Check, ExternalLink,
-  Info, Sparkles
+  BookOpen, FileText, Download, Eye, UploadCloud, Search,
+  CheckCircle2, Clock, XCircle, AlertCircle, ShieldCheck,
+  X, RefreshCw, BookMarked, Trash2, Check
 } from 'lucide-react';
 
 const StudyMaterials = () => {
@@ -21,6 +19,8 @@ const StudyMaterials = () => {
 
   // Active Main Tab: 'browse' | 'my_uploads' | 'pending'
   const initialTab = searchParams.get('tab') || 'browse';
+  const initialType = searchParams.get('material_type') || 'All';
+
   const [activeTab, setActiveTabState] = useState(initialTab);
 
   const setActiveTab = (tab) => {
@@ -73,7 +73,7 @@ const StudyMaterials = () => {
   const [selectedDept, setSelectedDept] = useState('All');
   const [selectedYear, setSelectedYear] = useState('All');
   const [selectedSemester, setSelectedSemester] = useState('All');
-  const [selectedType, setSelectedType] = useState('All');
+  const [selectedType, setSelectedType] = useState(initialType);
   const [selectedStatus, setSelectedStatus] = useState('All');
 
   // Upload Modal State
@@ -101,7 +101,7 @@ const StudyMaterials = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [rejecting, setRejecting] = useState(false);
 
-  // Action Loading (e.g. approving)
+  // Action Loading
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
   // 1. Fetch Metadata once
@@ -185,6 +185,8 @@ const StudyMaterials = () => {
     setSelectedStatus('All');
   };
 
+  const hasActiveFilters = selectedDept !== 'All' || selectedYear !== 'All' || selectedSemester !== 'All' || selectedType !== 'All' || searchTerm.trim() !== '' || (activeTab === 'my_uploads' && selectedStatus !== 'All');
+
   // Drag and Drop File Handlers
   const handleDrag = (e) => {
     e.preventDefault();
@@ -199,7 +201,7 @@ const StudyMaterials = () => {
   const validateAndSetFile = (file) => {
     if (!file) return;
     if (!file.name.toLowerCase().endsWith('.pdf')) {
-      toast.error('Invalid file format. Only PDF files (.pdf) are permitted.');
+      toast.error('Only PDF files (.pdf) are permitted.');
       return;
     }
     const MAX_SIZE = 50 * 1024 * 1024; // 50MB
@@ -209,7 +211,6 @@ const StudyMaterials = () => {
     }
     setUploadFile(file);
     if (!uploadTitle) {
-      // Suggest clean title from filename
       const suggested = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
       setUploadTitle(suggested);
     }
@@ -234,11 +235,11 @@ const StudyMaterials = () => {
   const handleUploadSubmit = async (e) => {
     e.preventDefault();
     if (!uploadFile) {
-      toast.error('Please select a valid PDF file.');
+      toast.error('Please select a PDF file.');
       return;
     }
     if (!uploadTitle.trim() || !uploadSubject.trim()) {
-      toast.error('Title and Subject are required fields.');
+      toast.error('Title and Subject are required.');
       return;
     }
 
@@ -262,19 +263,17 @@ const StudyMaterials = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || 'Failed to upload study material.');
+        throw new Error(data.message || 'Upload failed.');
       }
 
-      toast.success('Document uploaded! It is currently Pending Approval and will be reviewed by college staff.');
+      toast.success('Document uploaded');
       setShowUploadModal(false);
-      // Reset form
       setUploadFile(null);
       setUploadTitle('');
       setUploadSubject('');
       setUploadDesc('');
       if (fileInputRef.current) fileInputRef.current.value = '';
 
-      // Switch to my_uploads tab to let student view their pending upload
       setActiveTab('my_uploads');
       fetchMaterials();
     } catch (err) {
@@ -296,9 +295,9 @@ const StudyMaterials = () => {
         }
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to approve document.');
+      if (!res.ok) throw new Error(data.message || 'Approval failed.');
 
-      toast.success(`Approved "${title}"! Published to College Library.`);
+      toast.success(`Approved "${title}"`);
       fetchMaterials();
     } catch (err) {
       toast.error(err.message);
@@ -331,7 +330,7 @@ const StudyMaterials = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to reject document.');
 
-      toast.info('Study material rejected. Uploader can view feedback.');
+      toast.info('Document rejected');
       setShowRejectModal(false);
       setRejectMaterialId(null);
       setRejectReason('');
@@ -343,9 +342,9 @@ const StudyMaterials = () => {
     }
   };
 
-  // Delete Material (uploader for pending/rejected, or staff)
+  // Delete Material
   const handleDelete = async (id, title) => {
-    if (!window.confirm(`Are you sure you want to delete "${title}"?`)) return;
+    if (!window.confirm(`Delete "${title}"?`)) return;
 
     try {
       const res = await fetch(`${API_URL}/study-materials/${id}`, {
@@ -355,14 +354,14 @@ const StudyMaterials = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to delete.');
 
-      toast.success('Study material deleted successfully.');
+      toast.success('Document deleted');
       fetchMaterials();
     } catch (err) {
       toast.error(err.message);
     }
   };
 
-  // Open In-Browser PDF Preview
+  // PDF Preview
   const handleOpenPreview = async (material) => {
     setPreviewMaterial(material);
     setPreviewLoading(true);
@@ -379,7 +378,7 @@ const StudyMaterials = () => {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || 'Access denied or PDF preview unavailable.');
+        throw new Error(err.message || 'Preview unavailable.');
       }
 
       const blob = await res.blob();
@@ -401,7 +400,7 @@ const StudyMaterials = () => {
     setPreviewMaterial(null);
   };
 
-  // Secure Authenticated PDF Download
+  // Download PDF
   const handleDownload = async (material) => {
     try {
       toast.info(`Downloading "${material.original_filename}"...`);
@@ -425,13 +424,12 @@ const StudyMaterials = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      toast.success('Download complete!');
+      toast.success('Download complete');
     } catch (err) {
       toast.error('Download failed: ' + err.message);
     }
   };
 
-  // Format File Size
   const formatBytes = (bytes) => {
     if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
@@ -440,7 +438,6 @@ const StudyMaterials = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
-  // Badge Color for Material Type
   const getTypeBadgeClass = (type) => {
     switch (type) {
       case 'Textbook PDF':
@@ -460,124 +457,71 @@ const StudyMaterials = () => {
 
   return (
     <div className="container-fluid py-4 px-3 px-md-5 min-vh-100">
-      {/* 1. Header Banner */}
-      <div className="card cc-glass-card mb-4 border-gold-subtle overflow-hidden">
-        <div className="card-body p-4 p-md-5 position-relative">
-          <div className="row align-items-center">
-            <div className="col-lg-8">
-              <div className="d-flex align-items-center gap-2 mb-2">
-                <span className="badge bg-gold text-dark fw-bold px-3 py-2 text-uppercase tracking-wide d-inline-flex align-items-center gap-1">
-                  <GraduationCap size={15} /> Official College Portal
-                </span>
-                <span className="badge bg-navy-light text-light px-3 py-2">
-                  Role: <strong className="text-capitalize">{user?.role}</strong>
-                </span>
-              </div>
-              <h1 className="display-6 fw-bold text-light mb-2 font-heading">
-                College Digital <span className="text-gold">Study Materials</span> Library
-              </h1>
-              <p className="text-muted fs-6 mb-3 max-w-700">
-                A verified repository for college seniors and students to share textbooks, lab manuals,
-                lecture notes, and question papers. Every student upload is reviewed and verified by college staff before publication.
-              </p>
+      {/* 1. Linear-Style Header Strip */}
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div className="d-flex align-items-center gap-3">
+          <h1 className="h4 font-heading fw-bold text-light mb-0">Library</h1>
 
-              {/* Quick Summary Badges */}
-              <div className="d-flex flex-wrap gap-2 pt-2">
-                <div className="d-flex align-items-center gap-2 px-3 py-2 rounded bg-navy-main border border-secondary border-opacity-25 text-light fs-7">
-                  <CheckCircle2 size={16} className="text-success" />
-                  <span><strong>{counts.approved}</strong> Approved Materials</span>
-                </div>
-                <div className="d-flex align-items-center gap-2 px-3 py-2 rounded bg-navy-main border border-secondary border-opacity-25 text-light fs-7">
-                  <UploadCloud size={16} className="text-gold" />
-                  <span><strong>{counts.my_uploads}</strong> My Uploads</span>
-                </div>
-                {isStaff && (
-                  <div className="d-flex align-items-center gap-2 px-3 py-2 rounded bg-navy-main border border-warning text-light fs-7">
-                    <Clock size={16} className="text-warning" />
-                    <span><strong>{counts.pending}</strong> Pending Staff Review</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="col-lg-4 text-lg-end mt-4 mt-lg-0">
+          {/* Segmented View Control */}
+          <div className="cc-role-tab-group">
+            <button
+              type="button"
+              className={`cc-role-tab ${activeTab === 'browse' ? 'active' : ''}`}
+              onClick={() => setActiveTab('browse')}
+            >
+              Browse <span className="ms-1 fs-8 opacity-75">{counts.approved}</span>
+            </button>
+            <button
+              type="button"
+              className={`cc-role-tab ${activeTab === 'my_uploads' ? 'active' : ''}`}
+              onClick={() => setActiveTab('my_uploads')}
+            >
+              My Uploads <span className="ms-1 fs-8 opacity-75">{counts.my_uploads}</span>
+            </button>
+            {isStaff && (
               <button
-                onClick={() => setShowUploadModal(true)}
-                className="btn btn-primary d-inline-flex align-items-center gap-2 shadow-lg px-4 py-3"
+                type="button"
+                className={`cc-role-tab ${activeTab === 'pending' ? 'active' : ''}`}
+                onClick={() => setActiveTab('pending')}
               >
-                <UploadCloud size={18} />
-                <span>Upload Study Material</span>
+                Pending <span className="ms-1 fs-8 opacity-75">{counts.pending}</span>
               </button>
-            </div>
+            )}
           </div>
+        </div>
+
+        <div className="d-flex align-items-center gap-2">
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="btn btn-primary btn-sm d-inline-flex align-items-center gap-1.5 shadow-sm px-3 py-1.5"
+          >
+            <UploadCloud size={15} />
+            <span>Upload PDF</span>
+          </button>
+          <button
+            onClick={fetchMaterials}
+            className="btn btn-outline-secondary btn-sm p-1.5"
+            title="Refresh"
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          </button>
         </div>
       </div>
 
-      {/* 2. Navigation Tabs */}
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 border-bottom border-secondary border-opacity-25 pb-2">
-        <ul className="nav nav-pills gap-2">
-          <li className="nav-item">
-            <button
-              className={`nav-link d-flex align-items-center gap-2 px-3 py-2 ${activeTab === 'browse' ? 'active bg-gold text-dark fw-bold' : 'text-light'}`}
-              onClick={() => setActiveTab('browse')}
-            >
-              <BookOpen size={16} />
-              <span>Browse Materials</span>
-              <span className="badge bg-navy-main text-gold ms-1">{counts.approved}</span>
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className={`nav-link d-flex align-items-center gap-2 px-3 py-2 ${activeTab === 'my_uploads' ? 'active bg-gold text-dark fw-bold' : 'text-light'}`}
-              onClick={() => setActiveTab('my_uploads')}
-            >
-              <FileText size={16} />
-              <span>My Uploads</span>
-              <span className="badge bg-navy-main text-light ms-1">{counts.my_uploads}</span>
-            </button>
-          </li>
-          {isStaff && (
-            <li className="nav-item">
-              <button
-                className={`nav-link d-flex align-items-center gap-2 px-3 py-2 position-relative ${activeTab === 'pending' ? 'active bg-warning text-dark fw-bold' : 'text-warning'}`}
-                onClick={() => setActiveTab('pending')}
-              >
-                <ShieldCheck size={16} />
-                <span>Pending Approvals</span>
-                {counts.pending > 0 && (
-                  <span className="badge bg-danger text-light rounded-pill ms-1 animate-pulse">
-                    {counts.pending}
-                  </span>
-                )}
-              </button>
-            </li>
-          )}
-        </ul>
-
-        <button
-          onClick={fetchMaterials}
-          className="btn btn-sm btn-outline-secondary text-light d-flex align-items-center gap-1"
-          title="Refresh materials list"
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          <span>Refresh</span>
-        </button>
-      </div>
-
-      {/* 3. Search and Academic Filter Bar (Visible on Browse & My Uploads) */}
+      {/* 2. Inline Filter Strip */}
       <div className="card cc-glass-card mb-4 border-0">
-        <div className="card-body p-3">
+        <div className="card-body p-2.5">
           <form onSubmit={(e) => { e.preventDefault(); fetchMaterials(); }}>
             <div className="row g-2 align-items-center">
               {/* Search input */}
               <div className="col-12 col-md-4 col-xl-3">
-                <div className="input-group">
-                  <span className="input-group-text bg-navy-deep border-secondary border-opacity-25 text-gold">
-                    <Search size={16} />
+                <div className="input-group input-group-sm">
+                  <span className="input-group-text bg-transparent border-0 text-muted ps-2.5 pe-1">
+                    <Search size={14} />
                   </span>
                   <input
                     type="text"
-                    className="form-control bg-navy-deep border-secondary border-opacity-25 text-light"
+                    className="form-control form-control-sm border-0 bg-transparent text-light"
                     placeholder="Search by title, subject..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -585,35 +529,35 @@ const StudyMaterials = () => {
                   {searchTerm && (
                     <button
                       type="button"
-                      className="btn btn-navy-deep border-secondary border-opacity-25 text-muted"
+                      className="btn btn-sm btn-link text-muted p-1"
                       onClick={() => setSearchTerm('')}
                     >
-                      <X size={14} />
+                      <X size={13} />
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* Department filter */}
+              {/* Department */}
               <div className="col-6 col-md-4 col-xl-2">
                 <select
-                  className="form-select form-select-sm bg-navy-deep border-secondary border-opacity-25 text-light"
+                  className="form-select form-select-sm"
                   value={selectedDept}
                   onChange={(e) => setSelectedDept(e.target.value)}
                 >
                   <option value="All">All Departments</option>
                   {meta.departments.map((d) => (
                     <option key={d.code} value={d.name}>
-                      {d.code} - {d.name}
+                      {d.code}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Year filter */}
+              {/* Year */}
               <div className="col-6 col-md-4 col-xl-2">
                 <select
-                  className="form-select form-select-sm bg-navy-deep border-secondary border-opacity-25 text-light"
+                  className="form-select form-select-sm"
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
                 >
@@ -624,10 +568,10 @@ const StudyMaterials = () => {
                 </select>
               </div>
 
-              {/* Semester filter */}
+              {/* Semester */}
               <div className="col-6 col-md-4 col-xl-2">
                 <select
-                  className="form-select form-select-sm bg-navy-deep border-secondary border-opacity-25 text-light"
+                  className="form-select form-select-sm"
                   value={selectedSemester}
                   onChange={(e) => setSelectedSemester(e.target.value)}
                 >
@@ -638,29 +582,29 @@ const StudyMaterials = () => {
                 </select>
               </div>
 
-              {/* Material Type filter */}
+              {/* Material Type */}
               <div className="col-6 col-md-4 col-xl-2">
                 <select
-                  className="form-select form-select-sm bg-navy-deep border-secondary border-opacity-25 text-light"
+                  className="form-select form-select-sm"
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
                 >
-                  <option value="All">All Material Types</option>
+                  <option value="All">All Types</option>
                   {meta.material_types.map((t) => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Status filter (only in My Uploads) */}
+              {/* Status filter (in My Uploads) */}
               {activeTab === 'my_uploads' && (
                 <div className="col-6 col-md-4 col-xl-1">
                   <select
-                    className="form-select form-select-sm bg-navy-deep border-secondary border-opacity-25 text-light"
+                    className="form-select form-select-sm"
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
                   >
-                    <option value="All">All Status</option>
+                    <option value="All">Status</option>
                     <option value="pending">Pending</option>
                     <option value="approved">Approved</option>
                     <option value="rejected">Rejected</option>
@@ -669,83 +613,56 @@ const StudyMaterials = () => {
               )}
 
               {/* Reset button */}
-              <div className="col-auto ms-auto">
-                <button
-                  type="button"
-                  onClick={handleResetFilters}
-                  className="btn btn-sm btn-outline-secondary text-light py-1 px-2"
-                  title="Reset filters"
-                >
-                  Reset
-                </button>
-              </div>
+              {hasActiveFilters && (
+                <div className="col-auto ms-auto">
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="btn btn-sm btn-link text-muted p-0 fs-8"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
             </div>
           </form>
         </div>
       </div>
 
-      {/* 4. Active Tab Content Banner / Alerts */}
-      {activeTab === 'pending' && isStaff && (
-        <div className="alert alert-warning d-flex align-items-center gap-2 mb-4 bg-opacity-10 border-warning text-warning">
-          <ShieldCheck size={20} className="flex-shrink-0" />
-          <div className="fs-7">
-            <strong>Staff Moderation Center:</strong> You are viewing documents uploaded by students awaiting approval.
-            Please preview the PDF content to ensure academic accuracy and suitability before approving or rejecting.
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'my_uploads' && (
-        <div className="alert alert-info d-flex align-items-center gap-2 mb-4 bg-opacity-10 border-info text-info">
-          <Info size={20} className="flex-shrink-0" />
-          <div className="fs-7">
-            <strong>Upload Status Policy:</strong> Every uploaded document begins with <em>Pending Approval</em> status.
-            Once a college staff member reviews and approves your submission, it automatically becomes visible and downloadable to other students.
-          </div>
-        </div>
-      )}
-
-      {/* 5. Main Materials List / Grid */}
+      {/* 3. Materials Cards */}
       {loading ? (
         <div className="row g-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="col-12 col-md-6 col-lg-4">
-              <SkeletonLoader height="200px" />
+              <SkeletonLoader height="160px" />
             </div>
           ))}
         </div>
       ) : error ? (
-        <div className="card cc-glass-card border-danger text-center p-5">
-          <AlertCircle size={40} className="text-danger mx-auto mb-3" />
-          <h5 className="text-light">Failed to load study materials</h5>
-          <p className="text-muted">{error}</p>
-          <button onClick={fetchMaterials} className="btn btn-sm btn-outline-danger mx-auto mt-2">
-            Try Again
+        <div className="card cc-glass-card border-danger text-center p-4">
+          <AlertCircle size={32} className="text-danger mx-auto mb-2" />
+          <h6 className="text-light">Failed to load materials</h6>
+          <p className="text-muted small mb-3">{error}</p>
+          <button onClick={fetchMaterials} className="btn btn-sm btn-outline-danger mx-auto">
+            Retry
           </button>
         </div>
       ) : materials.length === 0 ? (
-        <div className="card cc-glass-card text-center p-5 border-dashed border-secondary border-opacity-50">
-          <BookOpen size={48} className="text-muted mx-auto mb-3 opacity-50" />
-          <h4 className="text-light font-heading">No Study Materials Found</h4>
-          <p className="text-muted max-w-500 mx-auto fs-6">
-            {activeTab === 'browse'
-              ? 'No approved study materials match your current search and filter criteria.'
-              : activeTab === 'pending'
-                ? 'All student uploads have been reviewed! There are currently no pending approvals.'
-                : 'You have not uploaded any study materials yet. Share your notes and lab manuals with fellow students!'}
-          </p>
-          <div className="d-flex justify-content-center gap-2 mt-2">
+        <div className="card cc-glass-card text-center p-5 border-dashed" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+          <BookOpen size={36} className="text-muted mx-auto mb-2 opacity-40" />
+          <h6 className="text-light font-heading">No materials found</h6>
+          <div className="d-flex justify-content-center gap-2 mt-3">
             <button
               onClick={() => setShowUploadModal(true)}
-              className="btn btn-primary d-inline-flex align-items-center gap-2"
+              className="btn btn-primary btn-sm d-inline-flex align-items-center gap-1.5"
             >
-              <UploadCloud size={16} />
-              <span>Upload Document</span>
+              <UploadCloud size={14} />
+              <span>Upload PDF</span>
             </button>
-            {(selectedDept !== 'All' || selectedYear !== 'All' || selectedSemester !== 'All' || selectedType !== 'All' || searchTerm) && (
+            {hasActiveFilters && (
               <button
                 onClick={handleResetFilters}
-                className="btn btn-outline-secondary text-light"
+                className="btn btn-outline-secondary btn-sm"
               >
                 Clear Filters
               </button>
@@ -756,141 +673,114 @@ const StudyMaterials = () => {
         <div className="row g-3">
           {materials.map((item) => (
             <div key={item.id} className="col-12 col-md-6 col-xl-4">
-              <div className="card cc-glass-card h-100 border-secondary border-opacity-25 hover-border-gold transition-all d-flex flex-column">
-                <div className="card-body p-4 d-flex flex-column">
+              <div className="card cc-glass-card h-100 transition-all d-flex flex-column" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+                <div className="card-body p-3.5 d-flex flex-column">
                   {/* Top Badges */}
-                  <div className="d-flex align-items-start justify-content-between gap-2 mb-2">
-                    <span className={`badge ${getTypeBadgeClass(item.material_type)} text-uppercase px-2 py-1`}>
+                  <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <span className={`badge ${getTypeBadgeClass(item.material_type)} text-uppercase px-2 py-0.5 fs-8`}>
                       {item.material_type}
                     </span>
 
                     {/* Status Badge */}
                     {item.approval_status === 'approved' && (
-                      <span className="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 d-inline-flex align-items-center gap-1">
-                        <CheckCircle2 size={12} /> Approved
+                      <span className="badge bg-success bg-opacity-20 text-success fs-8">
+                        Approved
                       </span>
                     )}
                     {item.approval_status === 'pending' && (
-                      <span className="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 d-inline-flex align-items-center gap-1">
-                        <Clock size={12} /> Pending Review
+                      <span className="badge bg-warning bg-opacity-20 text-warning fs-8">
+                        Pending
                       </span>
                     )}
                     {item.approval_status === 'rejected' && (
-                      <span className="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 d-inline-flex align-items-center gap-1">
-                        <XCircle size={12} /> Rejected
+                      <span className="badge bg-danger bg-opacity-20 text-danger fs-8">
+                        Rejected
                       </span>
                     )}
                   </div>
 
                   {/* Title */}
-                  <h5 className="card-title text-light font-heading fw-bold mb-2 line-clamp-2" title={item.title}>
+                  <h6 className="card-title text-light font-heading fw-bold mb-1.5 line-clamp-2 fs-7" title={item.title}>
                     {item.title}
-                  </h5>
+                  </h6>
 
-                  {/* Subject & Academic Tagging */}
-                  <div className="mb-3">
-                    <div className="d-flex align-items-center gap-1 text-gold fw-semibold fs-7 mb-1">
-                      <BookMarked size={14} />
-                      <span>{item.subject}</span>
-                    </div>
-                    <div className="d-flex flex-wrap gap-1 text-muted fs-8">
-                      <span className="badge bg-navy-main text-light border border-secondary border-opacity-25">
-                        {item.department}
-                      </span>
-                      <span className="badge bg-navy-main text-light border border-secondary border-opacity-25">
-                        {item.semester}
-                      </span>
-                      <span className="badge bg-navy-main text-light border border-secondary border-opacity-25">
-                        {item.year}
-                      </span>
-                    </div>
+                  {/* Academic Details */}
+                  <div className="text-gold fs-8 fw-medium mb-1 d-flex align-items-center gap-1">
+                    <BookMarked size={12} />
+                    <span>{item.subject}</span>
+                  </div>
+                  <div className="text-muted fs-8 mb-2">
+                    {item.department} • {item.semester} • {item.year}
                   </div>
 
-                  {/* Description if provided */}
+                  {/* Description if present */}
                   {item.description && (
-                    <p className="card-text text-muted fs-7 mb-3 line-clamp-2">
+                    <p className="text-muted fs-8 mb-2 line-clamp-2">
                       {item.description}
                     </p>
                   )}
 
-                  {/* Rejection Alert Box (if rejected) */}
+                  {/* Rejection alert */}
                   {item.approval_status === 'rejected' && item.rejection_reason && (
-                    <div className="p-2 mb-3 rounded bg-danger bg-opacity-10 border border-danger border-opacity-25 text-danger fs-8">
-                      <strong className="d-flex align-items-center gap-1 mb-1">
-                        <AlertCircle size={12} /> Rejection Reason:
-                      </strong>
-                      <span>{item.rejection_reason}</span>
+                    <div className="p-1.5 mb-2 rounded bg-danger bg-opacity-10 border border-danger border-opacity-25 text-danger fs-8">
+                      {item.rejection_reason}
                     </div>
                   )}
 
-                  {/* Spacer */}
-                  <div className="mt-auto pt-3 border-top border-secondary border-opacity-25">
-                    {/* Metadata footer */}
-                    <div className="d-flex align-items-center justify-content-between text-muted fs-8 mb-3">
-                      <div>
-                        <span>By: </span>
-                        <strong className="text-light">{item.uploader_name}</strong>
-                      </div>
-                      <div>
-                        <span>Size: </span>
-                        <strong className="text-light">{formatBytes(item.file_size)}</strong>
-                      </div>
+                  {/* Footer & Actions */}
+                  <div className="mt-auto pt-2.5 border-top d-flex flex-column gap-2" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+                    <div className="d-flex align-items-center justify-content-between text-muted fs-8">
+                      <span>{item.uploader_name}</span>
+                      <span>{formatBytes(item.file_size)}</span>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="d-flex flex-wrap gap-2">
-                      {/* Preview PDF */}
+                    <div className="d-flex align-items-center gap-1.5">
                       <button
                         onClick={() => handleOpenPreview(item)}
-                        className="btn btn-sm btn-outline-secondary text-light flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+                        className="btn btn-sm btn-outline-secondary flex-grow-1 py-1 fs-8"
                       >
-                        <Eye size={14} />
-                        <span>Preview PDF</span>
+                        <Eye size={12} className="me-1" /> Preview
                       </button>
 
-                      {/* Download PDF (Visible if approved or uploader/staff) */}
                       {(item.approval_status === 'approved' || isStaff || item.uploader_id === user?.id) && (
                         <button
                           onClick={() => handleDownload(item)}
-                          className="btn btn-sm btn-outline-primary flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+                          className="btn btn-sm btn-outline-primary flex-grow-1 py-1 fs-8"
                         >
-                          <Download size={14} />
-                          <span>Download</span>
+                          <Download size={12} className="me-1" /> Download
                         </button>
                       )}
 
-                      {/* Staff Moderation Buttons */}
-                      {isStaff && item.approval_status === 'pending' && (
-                        <div className="w-100 d-flex gap-2 pt-2 border-top border-warning border-opacity-25">
-                          <button
-                            onClick={() => handleApprove(item.id, item.title)}
-                            disabled={actionLoadingId === item.id}
-                            className="btn btn-sm btn-success flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-                          >
-                            <Check size={14} />
-                            <span>{actionLoadingId === item.id ? 'Approving...' : 'Approve'}</span>
-                          </button>
-                          <button
-                            onClick={() => handleOpenRejectModal(item.id)}
-                            className="btn btn-sm btn-outline-danger flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-                          >
-                            <X size={14} />
-                            <span>Reject</span>
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Delete option for uploader on pending/rejected items */}
+                      {/* Delete */}
                       {(isStaff || (item.uploader_id === user?.id && item.approval_status !== 'approved')) && (
                         <button
                           onClick={() => handleDelete(item.id, item.title)}
-                          className="btn btn-sm btn-outline-danger px-2"
-                          title="Delete material"
+                          className="btn btn-sm btn-outline-danger p-1"
+                          title="Delete"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={13} />
                         </button>
                       )}
                     </div>
+
+                    {/* Staff Moderation Bar */}
+                    {isStaff && item.approval_status === 'pending' && (
+                      <div className="d-flex gap-1.5 pt-1.5 border-top" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+                        <button
+                          onClick={() => handleApprove(item.id, item.title)}
+                          disabled={actionLoadingId === item.id}
+                          className="btn btn-sm btn-success flex-grow-1 py-1 fs-8"
+                        >
+                          <Check size={12} className="me-1" /> Approve
+                        </button>
+                        <button
+                          onClick={() => handleOpenRejectModal(item.id)}
+                          className="btn btn-sm btn-outline-danger flex-grow-1 py-1 fs-8"
+                        >
+                          <X size={12} className="me-1" /> Reject
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -899,21 +789,15 @@ const StudyMaterials = () => {
         </div>
       )}
 
-      {/* 6. Upload Modal */}
+      {/* 4. Upload Modal */}
       {showUploadModal && (
         <div className="modal show d-block cc-modal-backdrop" tabIndex="-1">
           <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content bg-navy-main border border-secondary border-opacity-50 text-light shadow-2xl">
-              <div className="modal-header border-secondary border-opacity-25">
-                <div className="d-flex align-items-center gap-2">
-                  <div className="p-2 rounded bg-gold text-dark">
-                    <UploadCloud size={20} />
-                  </div>
-                  <div>
-                    <h5 className="modal-title font-heading fw-bold mb-0">Upload Study Material</h5>
-                    <span className="text-muted fs-8">College Digital Library • Student & Staff Contribution</span>
-                  </div>
-                </div>
+            <div className="modal-content border" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-strong)' }}>
+              <div className="modal-header py-2.5 px-3 border-bottom" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+                <h6 className="modal-title font-heading fw-bold mb-0 fs-6 d-flex align-items-center gap-2">
+                  <UploadCloud size={18} className="text-gold" /> Upload Study Material
+                </h6>
                 <button
                   type="button"
                   className="btn-close btn-close-white"
@@ -922,26 +806,66 @@ const StudyMaterials = () => {
               </div>
 
               <form onSubmit={handleUploadSubmit}>
-                <div className="modal-body p-4">
-                  {/* College Moderation Notice */}
-                  <div className="p-3 mb-4 rounded bg-warning bg-opacity-10 border border-warning border-opacity-25 text-warning fs-7 d-flex align-items-start gap-2">
-                    <ShieldCheck size={18} className="flex-shrink-0 mt-1" />
-                    <div>
-                      <strong>Approval Notice:</strong> Student uploads will be placed in <em>Pending Approval</em>.
-                      To protect college academic integrity, documents will only be visible to other students once verified and approved by college faculty.
-                    </div>
-                  </div>
+                <div className="modal-body p-3.5">
+                  <div className="row g-2.5">
+                    {/* PDF Dropzone */}
+                    <div className="col-12 mb-1">
+                      <div
+                        className={`p-3 rounded border-2 border-dashed text-center transition-all ${dragActive ? 'border-gold' : ''}`}
+                        style={{ backgroundColor: 'var(--cc-bg-elevated)', borderColor: 'var(--cc-border-strong)', cursor: 'pointer' }}
+                        onDragEnter={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDragOver={handleDrag}
+                        onDrop={handleDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept=".pdf,application/pdf"
+                          className="d-none"
+                          onChange={handleFileChange}
+                        />
 
-                  <div className="row g-3">
+                        {uploadFile ? (
+                          <div className="d-flex align-items-center justify-content-between p-2 rounded border" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-subtle)' }}>
+                            <div className="d-flex align-items-center gap-2 text-start overflow-hidden">
+                              <FileText size={22} className="text-gold flex-shrink-0" />
+                              <div className="text-truncate">
+                                <div className="text-light fw-medium fs-7 text-truncate">{uploadFile.name}</div>
+                                <span className="text-muted fs-8">{formatBytes(uploadFile.size)}</span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-link text-danger p-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setUploadFile(null);
+                                if (fileInputRef.current) fileInputRef.current.value = '';
+                              }}
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="py-2">
+                            <UploadCloud size={28} className="text-gold mb-1 opacity-75" />
+                            <div className="text-light fs-7 fw-medium">
+                              Drop PDF here or click to browse
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Title */}
                     <div className="col-12">
-                      <label className="form-label text-light fs-7 fw-semibold">
-                        Document Title <span className="text-danger">*</span>
-                      </label>
+                      <label className="form-label fs-7 fw-semibold">Title</label>
                       <input
                         type="text"
-                        className="form-control bg-navy-deep border-secondary border-opacity-25 text-light"
-                        placeholder="e.g., DBMS Complete Handwritten Lecture Notes (Unit 1 to 5)"
+                        className="form-control form-control-sm"
+                        placeholder="Document title"
                         value={uploadTitle}
                         onChange={(e) => setUploadTitle(e.target.value)}
                         required
@@ -950,13 +874,11 @@ const StudyMaterials = () => {
 
                     {/* Subject */}
                     <div className="col-md-6">
-                      <label className="form-label text-light fs-7 fw-semibold">
-                        Subject Name <span className="text-danger">*</span>
-                      </label>
+                      <label className="form-label fs-7 fw-semibold">Subject</label>
                       <input
                         type="text"
-                        className="form-control bg-navy-deep border-secondary border-opacity-25 text-light"
-                        placeholder="e.g., Database Management Systems"
+                        className="form-control form-control-sm"
+                        placeholder="Subject name"
                         value={uploadSubject}
                         onChange={(e) => setUploadSubject(e.target.value)}
                         required
@@ -965,11 +887,9 @@ const StudyMaterials = () => {
 
                     {/* Material Type */}
                     <div className="col-md-6">
-                      <label className="form-label text-light fs-7 fw-semibold">
-                        Material Type <span className="text-danger">*</span>
-                      </label>
+                      <label className="form-label fs-7 fw-semibold">Type</label>
                       <select
-                        className="form-select bg-navy-deep border-secondary border-opacity-25 text-light"
+                        className="form-select form-select-sm"
                         value={uploadType}
                         onChange={(e) => setUploadType(e.target.value)}
                         required
@@ -982,28 +902,26 @@ const StudyMaterials = () => {
 
                     {/* Department */}
                     <div className="col-md-4">
-                      <label className="form-label text-light fs-7 fw-semibold">
-                        Department <span className="text-danger">*</span>
-                      </label>
+                      <label className="form-label fs-7 fw-semibold">Department</label>
                       <select
-                        className="form-select bg-navy-deep border-secondary border-opacity-25 text-light"
+                        className="form-select form-select-sm"
                         value={uploadDept}
                         onChange={(e) => setUploadDept(e.target.value)}
                         required
                       >
                         {meta.departments.map((d) => (
-                          <option key={d.code} value={d.name}>{d.name}</option>
+                          <option key={d.code} value={d.name}>
+                            {d.name}
+                          </option>
                         ))}
                       </select>
                     </div>
 
                     {/* Year */}
                     <div className="col-md-4">
-                      <label className="form-label text-light fs-7 fw-semibold">
-                        Academic Year <span className="text-danger">*</span>
-                      </label>
+                      <label className="form-label fs-7 fw-semibold">Year</label>
                       <select
-                        className="form-select bg-navy-deep border-secondary border-opacity-25 text-light"
+                        className="form-select form-select-sm"
                         value={uploadYear}
                         onChange={(e) => setUploadYear(e.target.value)}
                         required
@@ -1016,11 +934,9 @@ const StudyMaterials = () => {
 
                     {/* Semester */}
                     <div className="col-md-4">
-                      <label className="form-label text-light fs-7 fw-semibold">
-                        Semester <span className="text-danger">*</span>
-                      </label>
+                      <label className="form-label fs-7 fw-semibold">Semester</label>
                       <select
-                        className="form-select bg-navy-deep border-secondary border-opacity-25 text-light"
+                        className="form-select form-select-sm"
                         value={uploadSemester}
                         onChange={(e) => setUploadSemester(e.target.value)}
                         required
@@ -1033,81 +949,22 @@ const StudyMaterials = () => {
 
                     {/* Description */}
                     <div className="col-12">
-                      <label className="form-label text-light fs-7 fw-semibold">
-                        Description / Syllabus Units (Optional)
-                      </label>
+                      <label className="form-label fs-7 fw-semibold">Description (Optional)</label>
                       <textarea
                         rows="2"
-                        className="form-control bg-navy-deep border-secondary border-opacity-25 text-light"
-                        placeholder="Add topics covered, lab experiment numbers, or exam year details..."
+                        className="form-control form-control-sm"
+                        placeholder="Topics covered, unit summary..."
                         value={uploadDesc}
                         onChange={(e) => setUploadDesc(e.target.value)}
                       />
                     </div>
-
-                    {/* PDF Dropzone */}
-                    <div className="col-12">
-                      <label className="form-label text-light fs-7 fw-semibold">
-                        Upload PDF Document <span className="text-danger">*</span>
-                      </label>
-                      <div
-                        className={`p-4 rounded border-2 border-dashed text-center transition-all ${dragActive ? 'border-gold bg-navy-deep' : 'border-secondary border-opacity-50 bg-navy-deep'}`}
-                        onDragEnter={handleDrag}
-                        onDragLeave={handleDrag}
-                        onDragOver={handleDrag}
-                        onDrop={handleDrop}
-                        onClick={() => fileInputRef.current?.click()}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept=".pdf,application/pdf"
-                          className="d-none"
-                          onChange={handleFileChange}
-                        />
-
-                        {uploadFile ? (
-                          <div className="d-flex align-items-center justify-content-between p-3 bg-navy-main rounded border border-gold">
-                            <div className="d-flex align-items-center gap-3 text-start">
-                              <FileText size={32} className="text-gold" />
-                              <div>
-                                <h6 className="mb-0 text-light font-heading">{uploadFile.name}</h6>
-                                <span className="text-muted fs-8">{formatBytes(uploadFile.size)} • PDF Document</span>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-danger"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setUploadFile(null);
-                                if (fileInputRef.current) fileInputRef.current.value = '';
-                              }}
-                            >
-                              <X size={14} /> Remove
-                            </button>
-                          </div>
-                        ) : (
-                          <div>
-                            <UploadCloud size={40} className="text-gold mb-2 opacity-75" />
-                            <h6 className="text-light font-heading mb-1">
-                              Drag & Drop your PDF file here, or click to browse
-                            </h6>
-                            <p className="text-muted fs-8 mb-0">
-                              Only genuine PDF files (.pdf) are allowed. Maximum file size: 50 MB.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 </div>
 
-                <div className="modal-footer border-secondary border-opacity-25">
+                <div className="modal-footer py-2 px-3 border-top" style={{ borderColor: 'var(--cc-border-subtle)' }}>
                   <button
                     type="button"
-                    className="btn btn-outline-secondary text-light"
+                    className="btn btn-outline-secondary btn-sm"
                     onClick={() => setShowUploadModal(false)}
                     disabled={uploading}
                   >
@@ -1115,18 +972,18 @@ const StudyMaterials = () => {
                   </button>
                   <button
                     type="submit"
-                    className="btn btn-primary d-inline-flex align-items-center gap-2"
+                    className="btn btn-primary btn-sm d-inline-flex align-items-center gap-1.5"
                     disabled={uploading || !uploadFile}
                   >
                     {uploading ? (
                       <>
-                        <RefreshCw size={16} className="animate-spin" />
+                        <RefreshCw size={13} className="animate-spin" />
                         <span>Uploading...</span>
                       </>
                     ) : (
                       <>
-                        <UploadCloud size={16} />
-                        <span>Submit for Staff Approval</span>
+                        <UploadCloud size={13} />
+                        <span>Upload</span>
                       </>
                     )}
                   </button>
@@ -1137,20 +994,20 @@ const StudyMaterials = () => {
         </div>
       )}
 
-      {/* 7. PDF Preview Modal */}
+      {/* 5. PDF Preview Modal */}
       {previewMaterial && (
         <div className="modal show d-block cc-modal-backdrop" tabIndex="-1">
           <div className="modal-dialog modal-xl modal-dialog-centered h-90">
-            <div className="modal-content bg-navy-main border border-secondary border-opacity-50 text-light h-100 d-flex flex-column">
-              <div className="modal-header border-secondary border-opacity-25 py-2 px-3">
+            <div className="modal-content h-100 d-flex flex-column border" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-strong)' }}>
+              <div className="modal-header py-2 px-3 border-bottom" style={{ borderColor: 'var(--cc-border-subtle)' }}>
                 <div className="d-flex align-items-center gap-2 overflow-hidden me-3">
-                  <FileText size={20} className="text-gold flex-shrink-0" />
+                  <FileText size={18} className="text-gold flex-shrink-0" />
                   <div className="overflow-hidden">
-                    <h6 className="modal-title font-heading fw-bold text-truncate mb-0">
+                    <h6 className="modal-title font-heading fw-bold text-truncate mb-0 fs-7">
                       {previewMaterial.title}
                     </h6>
                     <span className="text-muted fs-8">
-                      {previewMaterial.subject} • {previewMaterial.material_type} • {previewMaterial.department}
+                      {previewMaterial.subject} • {previewMaterial.material_type}
                     </span>
                   </div>
                 </div>
@@ -1158,10 +1015,10 @@ const StudyMaterials = () => {
                 <div className="d-flex align-items-center gap-2">
                   <button
                     onClick={() => handleDownload(previewMaterial)}
-                    className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+                    className="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 py-1 px-2.5 fs-8"
                   >
-                    <Download size={14} />
-                    <span className="d-none d-sm-inline">Download PDF</span>
+                    <Download size={13} />
+                    <span>Download</span>
                   </button>
                   <button
                     type="button"
@@ -1171,31 +1028,27 @@ const StudyMaterials = () => {
                 </div>
               </div>
 
-              <div className="modal-body p-0 flex-grow-1 position-relative bg-navy-deep">
+              <div className="modal-body p-0 flex-grow-1 position-relative" style={{ backgroundColor: 'var(--cc-bg-deep)' }}>
                 {previewLoading ? (
                   <div className="d-flex flex-column align-items-center justify-content-center h-100">
-                    <RefreshCw size={36} className="animate-spin text-gold mb-3" />
-                    <p className="text-muted">Loading secure PDF document...</p>
+                    <RefreshCw size={28} className="animate-spin text-gold mb-2" />
+                    <span className="text-muted fs-8">Loading document...</span>
                   </div>
                 ) : previewBlobUrl ? (
                   <iframe
                     src={previewBlobUrl}
                     title={previewMaterial.title}
                     className="w-100 h-100 border-0"
-                    style={{ minHeight: '600px' }}
                   />
                 ) : (
                   <div className="d-flex flex-column align-items-center justify-content-center h-100 p-4 text-center">
-                    <AlertCircle size={40} className="text-warning mb-2" />
-                    <h5 className="text-light">Preview not available in this browser</h5>
-                    <p className="text-muted fs-7">
-                      You can download the PDF file directly to view it on your device.
-                    </p>
+                    <AlertCircle size={32} className="text-warning mb-2" />
+                    <h6 className="text-light">Preview not available</h6>
                     <button
                       onClick={() => handleDownload(previewMaterial)}
-                      className="btn btn-primary btn-sm d-flex align-items-center gap-1"
+                      className="btn btn-primary btn-sm d-flex align-items-center gap-1 mt-2"
                     >
-                      <Download size={14} /> Download Document
+                      <Download size={13} /> Download PDF
                     </button>
                   </div>
                 )}
@@ -1205,16 +1058,15 @@ const StudyMaterials = () => {
         </div>
       )}
 
-      {/* 8. Staff Rejection Reason Modal */}
+      {/* 6. Staff Rejection Modal */}
       {showRejectModal && (
         <div className="modal show d-block cc-modal-backdrop" tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content bg-navy-main border border-danger border-opacity-50 text-light shadow-2xl">
-              <div className="modal-header border-secondary border-opacity-25">
-                <div className="d-flex align-items-center gap-2 text-danger">
-                  <XCircle size={20} />
-                  <h5 className="modal-title font-heading fw-bold mb-0">Reject Study Material</h5>
-                </div>
+            <div className="modal-content border" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-strong)' }}>
+              <div className="modal-header py-2.5 px-3 border-bottom" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+                <h6 className="modal-title font-heading fw-bold mb-0 fs-6 text-danger d-flex align-items-center gap-2">
+                  <XCircle size={17} /> Reject Document
+                </h6>
                 <button
                   type="button"
                   className="btn-close btn-close-white"
@@ -1223,30 +1075,24 @@ const StudyMaterials = () => {
               </div>
 
               <form onSubmit={handleConfirmReject}>
-                <div className="modal-body p-4">
-                  <p className="text-muted fs-7 mb-3">
-                    Please provide a clear reason for rejecting this document so the student understands how to improve or resubmit their material.
-                  </p>
-
-                  <div className="mb-3">
-                    <label className="form-label text-light fs-7 fw-semibold">
-                      Rejection Reason / Guidance
-                    </label>
-                    <textarea
-                      rows="4"
-                      className="form-control bg-navy-deep border-secondary border-opacity-25 text-light"
-                      placeholder="e.g., Unclear scans, duplicate content, missing Unit 4 syllabus, or inappropriate file format..."
-                      value={rejectReason}
-                      onChange={(e) => setRejectReason(e.target.value)}
-                      required
-                    />
-                  </div>
+                <div className="modal-body p-3">
+                  <label className="form-label fs-7 fw-semibold">
+                    Reason
+                  </label>
+                  <textarea
+                    rows="3"
+                    className="form-control"
+                    placeholder="Specify rejection reason..."
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    required
+                  />
                 </div>
 
-                <div className="modal-footer border-secondary border-opacity-25">
+                <div className="modal-footer py-2 px-3 border-top" style={{ borderColor: 'var(--cc-border-subtle)' }}>
                   <button
                     type="button"
-                    className="btn btn-outline-secondary text-light"
+                    className="btn btn-outline-secondary btn-sm"
                     onClick={() => setShowRejectModal(false)}
                     disabled={rejecting}
                   >
@@ -1254,18 +1100,18 @@ const StudyMaterials = () => {
                   </button>
                   <button
                     type="submit"
-                    className="btn btn-danger d-inline-flex align-items-center gap-2"
+                    className="btn btn-danger btn-sm d-inline-flex align-items-center gap-1.5"
                     disabled={rejecting}
                   >
                     {rejecting ? (
                       <>
-                        <RefreshCw size={14} className="animate-spin" />
+                        <RefreshCw size={13} className="animate-spin" />
                         <span>Rejecting...</span>
                       </>
                     ) : (
                       <>
-                        <X size={14} />
-                        <span>Confirm Rejection</span>
+                        <X size={13} />
+                        <span>Reject</span>
                       </>
                     )}
                   </button>

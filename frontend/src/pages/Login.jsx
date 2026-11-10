@@ -77,11 +77,10 @@ const Login = () => {
     <div className="container py-5 d-flex justify-content-center align-items-center min-vh-100 animated-fade-in">
       <div className="cc-card w-100" style={{ maxWidth: '450px' }}>
         <div className="text-center mb-4">
-          <div className="text-gold mb-3 d-inline-block">
-            <LogIn size={40} />
+          <div className="text-gold mb-2 d-inline-block">
+            <LogIn size={32} />
           </div>
-          <h2 className="font-heading fw-bold">{getTitle()}</h2>
-          <p className="text-muted">Access the CampusConnect portal</p>
+          <h2 className="font-heading fw-bold fs-4 mb-0">{getTitle()}</h2>
         </div>
 
         {/* Dynamic Role Tabs */}
@@ -117,30 +116,30 @@ const Login = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label d-flex align-items-center gap-2">
-              <Mail size={16} className="text-gold" /> Email Address
+            <label className="form-label d-flex align-items-center gap-2 fs-7">
+              <Mail size={15} className="text-gold" /> Email Address
             </label>
             <input
               type="email"
               name="email"
               required
               className="form-control"
-              placeholder="e.g. name@university.edu"
+              placeholder="name@university.edu"
               value={formData.email}
               onChange={handleChange}
             />
           </div>
 
           <div className="mb-3">
-            <label className="form-label d-flex align-items-center gap-2">
-              <Lock size={16} className="text-gold" /> Password
+            <label className="form-label d-flex align-items-center gap-2 fs-7">
+              <Lock size={15} className="text-gold" /> Password
             </label>
             <input
               type="password"
               name="password"
               required
               className="form-control"
-              placeholder="Enter your password"
+              placeholder="Password"
               value={formData.password}
               onChange={handleChange}
             />
@@ -163,7 +162,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="text-center mt-4 text-muted small border-top border-secondary pt-3">
+        <div className="text-center mt-4 text-muted small border-top pt-3" style={{ borderColor: 'var(--cc-border-subtle)' }}>
           {selectedRole === 'admin' ? (
             <span>Admin registration is disabled.</span>
           ) : (
