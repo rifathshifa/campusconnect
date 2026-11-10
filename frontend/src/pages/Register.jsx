@@ -67,8 +67,8 @@ const Register = () => {
   };
 
   return (
-    <div className="container py-5 d-flex justify-content-center align-items-center min-vh-100 animated-fade-in">
-      <div className="cc-card w-100" style={{ maxWidth: '520px' }}>
+    <div className="container py-4 py-sm-5 d-flex justify-content-center align-items-center min-vh-100 animated-fade-in">
+      <div className="cc-card w-100 p-4 p-sm-5" style={{ maxWidth: '520px' }}>
         <div className="text-center mb-4">
           <div className="text-gold mb-2 d-inline-block">
             <UserPlus size={32} />

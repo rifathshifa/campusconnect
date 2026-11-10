@@ -459,7 +459,7 @@ const StudyMaterials = () => {
     <div className="container-fluid py-4 px-3 px-md-5 min-vh-100">
       {/* 1. Linear-Style Header Strip */}
       <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-        <div className="d-flex align-items-center gap-3">
+        <div className="d-flex align-items-center gap-2 gap-sm-3 flex-wrap">
           <h1 className="h4 font-heading fw-bold text-light mb-0">Library</h1>
 
           {/* Segmented View Control */}
@@ -515,13 +515,13 @@ const StudyMaterials = () => {
             <div className="row g-2 align-items-center">
               {/* Search input */}
               <div className="col-12 col-md-4 col-xl-3">
-                <div className="input-group input-group-sm">
-                  <span className="input-group-text bg-transparent border-0 text-muted ps-2.5 pe-1">
+                <div className="input-group-seamless">
+                  <span className="input-group-text">
                     <Search size={14} />
                   </span>
                   <input
                     type="text"
-                    className="form-control form-control-sm border-0 bg-transparent text-light"
+                    className="form-control form-control-sm text-light"
                     placeholder="Search by title, subject..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -529,7 +529,7 @@ const StudyMaterials = () => {
                   {searchTerm && (
                     <button
                       type="button"
-                      className="btn btn-sm btn-link text-muted p-1"
+                      className="btn btn-sm btn-link text-muted p-1 pe-2"
                       onClick={() => setSearchTerm('')}
                     >
                       <X size={13} />
@@ -673,8 +673,8 @@ const StudyMaterials = () => {
         <div className="row g-3">
           {materials.map((item) => (
             <div key={item.id} className="col-12 col-md-6 col-xl-4">
-              <div className="card cc-glass-card h-100 transition-all d-flex flex-column" style={{ borderColor: 'var(--cc-border-subtle)' }}>
-                <div className="card-body p-3.5 d-flex flex-column">
+              <div className="card cc-glass-card h-100 transition-all d-flex flex-column">
+                <div className="card-body p-3 d-flex flex-column">
                   {/* Top Badges */}
                   <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
                     <span className={`badge ${getTypeBadgeClass(item.material_type)} text-uppercase px-2 py-0.5 fs-8`}>
@@ -806,13 +806,12 @@ const StudyMaterials = () => {
               </div>
 
               <form onSubmit={handleUploadSubmit}>
-                <div className="modal-body p-3.5">
-                  <div className="row g-2.5">
+                <div className="modal-body p-3 p-sm-4">
+                  <div className="row g-3">
                     {/* PDF Dropzone */}
                     <div className="col-12 mb-1">
                       <div
-                        className={`p-3 rounded border-2 border-dashed text-center transition-all ${dragActive ? 'border-gold' : ''}`}
-                        style={{ backgroundColor: 'var(--cc-bg-elevated)', borderColor: 'var(--cc-border-strong)', cursor: 'pointer' }}
+                        className={`cc-dropzone ${dragActive ? 'drag-active' : ''}`}
                         onDragEnter={handleDrag}
                         onDragLeave={handleDrag}
                         onDragOver={handleDrag}
@@ -828,7 +827,7 @@ const StudyMaterials = () => {
                         />
 
                         {uploadFile ? (
-                          <div className="d-flex align-items-center justify-content-between p-2 rounded border" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-subtle)' }}>
+                          <div className="d-flex align-items-center justify-content-between p-2 cc-list-item">
                             <div className="d-flex align-items-center gap-2 text-start overflow-hidden">
                               <FileText size={22} className="text-gold flex-shrink-0" />
                               <div className="text-truncate">

@@ -268,28 +268,28 @@ const Dashboard = () => {
       {/* 2. Linear-Style Metric Cards */}
       <div className="row g-3 mb-4">
         <div className="col-6 col-lg-3">
-          <div className="card cc-glass-card h-100 p-3 border-start border-3 border-primary">
+          <div className="cc-stat-card accent-primary h-100 p-3">
             <span className="text-muted fs-8 fw-semibold text-uppercase tracking-wider">Library Materials</span>
             <div className="h3 font-heading text-light fw-bold my-1">{counts.approved_materials || 0}</div>
           </div>
         </div>
 
         <div className="col-6 col-lg-3">
-          <div className="card cc-glass-card h-100 p-3 border-start border-3 border-warning">
+          <div className="cc-stat-card accent-warning h-100 p-3">
             <span className="text-muted fs-8 fw-semibold text-uppercase tracking-wider">My Uploads</span>
             <div className="h3 font-heading text-light fw-bold my-1">{counts.my_uploads || 0}</div>
           </div>
         </div>
 
         <div className="col-6 col-lg-3">
-          <div className="card cc-glass-card h-100 p-3 border-start border-3 border-success">
+          <div className="cc-stat-card accent-success h-100 p-3">
             <span className="text-muted fs-8 fw-semibold text-uppercase tracking-wider">Approved</span>
             <div className="h3 font-heading text-light fw-bold my-1">{counts.my_approved || 0}</div>
           </div>
         </div>
 
         <div className="col-6 col-lg-3">
-          <div className="card cc-glass-card h-100 p-3 border-start border-3 border-gold">
+          <div className="cc-stat-card accent-gold h-100 p-3">
             <span className="text-muted fs-8 fw-semibold text-uppercase tracking-wider">
               {isStaff ? 'Pending Review' : 'Under Review'}
             </span>
@@ -302,8 +302,8 @@ const Dashboard = () => {
 
       {/* 3. Staff Review Queue (if Staff) */}
       {isStaff && (
-        <div className="card cc-glass-card mb-4 border-warning border-opacity-40">
-          <div className="card-header bg-transparent border-bottom py-2.5 px-3 d-flex align-items-center justify-content-between" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+        <div className="card cc-glass-card mb-4">
+          <div className="card-header bg-transparent py-2.5 px-3 d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center gap-2">
               <ShieldCheck className="text-warning" size={17} />
               <span className="font-heading fw-bold text-light fs-7">Pending Submissions</span>
@@ -325,7 +325,7 @@ const Dashboard = () => {
               <div className="row g-2">
                 {pendingApprovals.map((item) => (
                   <div key={item.id} className="col-12 col-md-6 col-xl-4">
-                    <div className="p-2.5 rounded border h-100 d-flex flex-column" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-subtle)' }}>
+                    <div className="cc-list-item p-2.5 h-100 d-flex flex-column">
                       <div className="d-flex align-items-center justify-content-between gap-2 mb-1.5">
                         <span className="badge bg-warning bg-opacity-20 text-warning fs-8">
                           {item.material_type}
@@ -339,7 +339,7 @@ const Dashboard = () => {
                       <div className="text-gold fs-8 mb-1">{item.subject} • {item.department}</div>
                       <div className="text-muted fs-8 mb-2">By: {item.uploader_name}</div>
 
-                      <div className="mt-auto d-flex gap-1.5 pt-2 border-top" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+                      <div className="mt-auto d-flex gap-1.5 pt-2 border-top">
                         <button
                           onClick={() => handleOpenPreview(item)}
                           className="btn btn-sm btn-outline-secondary flex-grow-1 py-1 fs-8"
@@ -374,8 +374,8 @@ const Dashboard = () => {
       <div className="row g-3">
         {/* Left: My Uploads */}
         <div className="col-lg-7">
-          <div className="card cc-glass-card h-100 border-0">
-            <div className="card-header bg-transparent border-bottom py-2.5 px-3 d-flex align-items-center justify-content-between" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+          <div className="card cc-glass-card h-100">
+            <div className="card-header bg-transparent py-2.5 px-3 d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center gap-2">
                 <UploadCloud className="text-gold" size={17} />
                 <span className="font-heading fw-bold text-light fs-7">My Uploads</span>
@@ -397,7 +397,7 @@ const Dashboard = () => {
               ) : (
                 <div className="d-flex flex-column gap-2">
                   {myRecentUploads.map((item) => (
-                    <div key={item.id} className="p-2.5 rounded border" style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-subtle)' }}>
+                    <div key={item.id} className="cc-list-item p-2.5">
                       <div className="d-flex align-items-start justify-content-between gap-2">
                         <div className="overflow-hidden">
                           <h6 className="text-light fw-bold mb-0.5 font-heading fs-7 text-truncate" title={item.title}>
@@ -431,7 +431,7 @@ const Dashboard = () => {
                         </div>
                       )}
 
-                      <div className="d-flex justify-content-end gap-2 mt-2 pt-1.5 border-top" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+                      <div className="d-flex justify-content-end gap-2 mt-2 pt-1.5 border-top">
                         <button
                           onClick={() => handleOpenPreview(item)}
                           className="btn btn-sm btn-link text-light p-0 fs-8 text-decoration-none"
@@ -457,8 +457,8 @@ const Dashboard = () => {
 
         {/* Right: Recent Library Additions */}
         <div className="col-lg-5">
-          <div className="card cc-glass-card h-100 border-0">
-            <div className="card-header bg-transparent border-bottom py-2.5 px-3 d-flex align-items-center justify-content-between" style={{ borderColor: 'var(--cc-border-subtle)' }}>
+          <div className="card cc-glass-card h-100">
+            <div className="card-header bg-transparent py-2.5 px-3 d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center gap-2">
                 <BookOpen className="text-primary" size={17} />
                 <span className="font-heading fw-bold text-light fs-7">Recent Additions</span>
@@ -479,8 +479,7 @@ const Dashboard = () => {
                   {recentMaterials.map((file) => (
                     <div
                       key={file.id}
-                      className="p-2.5 rounded border d-flex align-items-center justify-content-between gap-2"
-                      style={{ backgroundColor: 'var(--cc-bg-surface)', borderColor: 'var(--cc-border-subtle)' }}
+                      className="cc-list-item p-2.5 d-flex align-items-center justify-content-between gap-2"
                     >
                       <div className="overflow-hidden">
                         <h6 className="text-light fw-bold mb-0.5 text-truncate font-heading fs-7" title={file.title}>

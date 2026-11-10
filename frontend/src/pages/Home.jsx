@@ -79,7 +79,7 @@ const Home = () => {
                   <div key={cat.title} className="col-sm-6">
                     <Link
                       to={`/study-materials?material_type=${encodeURIComponent(cat.type)}`}
-                      className="cc-card p-3.5 d-block text-decoration-none h-100 border-gold-subtle hover-border-gold transition-all"
+                      className="cc-card p-3 p-sm-4 d-block text-decoration-none h-100 border-gold-subtle hover-border-gold transition-all"
                     >
                       <div className="d-flex align-items-center justify-content-between mb-2">
                         <div className="text-gold">

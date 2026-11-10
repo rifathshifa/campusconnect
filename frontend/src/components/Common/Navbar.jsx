@@ -110,7 +110,7 @@ const Navbar = () => {
               </>
             )}
           </ul>
-          <div className="d-flex align-items-center gap-2">
+          <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0 flex-wrap">
             <button
               onClick={toggleTheme}
               className="theme-toggle-btn"
@@ -121,9 +121,9 @@ const Navbar = () => {
             </button>
             {isAuthenticated ? (
               <div className="d-flex align-items-center gap-2">
-                <span className="d-flex align-items-center gap-1.5 px-2.5 py-1 rounded border text-light fs-8 font-heading" style={{ borderColor: 'var(--cc-border-subtle)', backgroundColor: 'var(--cc-bg-surface)' }}>
+                <span className="d-flex align-items-center gap-1.5 px-2 py-1 rounded border text-light fs-8 font-heading" style={{ borderColor: 'var(--cc-border-subtle)', backgroundColor: 'var(--cc-bg-surface)' }}>
                   <User size={13} className="text-gold" />
-                  <span className="fw-semibold">{user?.full_name || user?.username}</span>
+                  <span className="fw-semibold text-truncate" style={{ maxWidth: '140px' }}>{user?.full_name || user?.username}</span>
                   <span className={`badge ms-1 text-capitalize ${getBadgeClass(user?.role)}`} style={{ fontSize: '0.7rem', padding: '0.2em 0.5em' }}>
                     {user?.role}
                   </span>
